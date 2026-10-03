@@ -56,7 +56,30 @@ El documento completo manda: [docs/lanzamiento/estandar-de-codificacion.md](docs
 
 ## Comandos
 
-TODO: añadir los comandos de build, pruebas, lint y arranque cuando existan los proyectos.
+Backend, desde `backend/`:
+
+| Comando | Qué hace |
+| --- | --- |
+| `./mvnw spring-boot:run` | Arranca la API en http://localhost:8080 con el perfil `local` (MySQL; necesita `src/main/resources/application-local.properties`) |
+| `./mvnw test` | Ejecuta las pruebas con el perfil `test` (H2 en memoria, sin MySQL) |
+| `./mvnw verify` | Pruebas y Checkstyle (`checkstyle.xml`); tiene que pasar antes de cada pull request |
+
+Frontend, desde `frontend/`:
+
+| Comando | Qué hace |
+| --- | --- |
+| `npm run dev` | Arranca Vite en http://localhost:5173 con proxy de `/api` a http://localhost:8080 |
+| `npm run lint` | ESLint |
+| `npm run format` / `npm run format:check` | Aplica o comprueba el formato de Prettier |
+| `npm run build` | Comprobación de tipos y build de producción |
+| `npx shadcn@latest add <componente>` | Añade un componente de shadcn/ui a `src/components/ui/` |
+
+Notas:
+
+- Las pruebas de integración del backend usan `@ActiveProfiles("test")`; sin él intentan conectarse a MySQL.
+- Checkstyle sigue Google Java Style (4 espacios, 120 caracteres) y exige Javadoc solo en los métodos públicos de las clases `*Service`; no añadas Javadoc de relleno en el resto.
+- `src/components/ui/` se deja tal como lo genera shadcn: Prettier lo ignora y no se edita a mano.
+- Las llamadas a la API van en `src/api/` (por ejemplo, `healthApi.ts`).
 
 ## Restricciones
 

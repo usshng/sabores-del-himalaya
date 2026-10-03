@@ -38,4 +38,40 @@ food-ordering-platform/
 
 ## Cómo arrancar
 
-TODO: añadir los comandos cuando existan los proyectos de backend y frontend.
+1. Crea la base de datos en MySQL (desde MySQL Workbench o la consola):
+
+   ```sql
+   CREATE DATABASE `food-ordering-platform`;
+   ```
+
+2. Crea tu fichero de credenciales a partir de la plantilla y rellena tu usuario y contraseña de MySQL. Este fichero está en `.gitignore` y no se sube a GitHub.
+
+   ```bash
+   cp backend/src/main/resources/application-local.example.properties backend/src/main/resources/application-local.properties
+   ```
+
+3. Arranca el backend (API en http://localhost:8080):
+
+   ```bash
+   cd backend
+   ./mvnw spring-boot:run
+   ```
+
+   En Windows, usa `mvnw.cmd` en lugar de `./mvnw`.
+
+4. En otra terminal, arranca el frontend:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+5. Abre http://localhost:5173. Si la página muestra «Funciona» en el backend y en la base de datos, el entorno está listo.
+
+Antes de abrir un pull request, comprueba que pasan:
+
+```bash
+(cd backend && ./mvnw verify)                                       # pruebas y Checkstyle
+(cd frontend && npm run lint && npm run format:check && npm run build)
+```
