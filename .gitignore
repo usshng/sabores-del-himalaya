@@ -1,0 +1,17 @@
+# Material de la asignatura: solo en local, nunca se sube
+docs/course/
+
+# Build y dependencias
+target/
+node_modules/
+dist/
+
+# Configuración local con credenciales
+application-local.properties
+.env*
+
+# Sistema e IDE
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
