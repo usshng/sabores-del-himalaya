@@ -1,0 +1,38 @@
+name: LOC Report
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  loc-report:
+    name: loc-report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install cloc
+        run: sudo apt-get update && sudo apt-get install -y cloc
+
+      # Same command as the "Recuento de líneas de código" section of the coding standard.
+      - name: Count lines of code
+        run: cloc backend/src/main frontend/src --exclude-dir=ui | tee loc-report.txt
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## Lines of code — ${GITHUB_REF_NAME}"
+            echo '```text'
+            cat loc-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: loc-report-${{ github.ref_name }}
+          path: loc-report.txt

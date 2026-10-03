@@ -1,0 +1,58 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    name: pr-title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            test
+            docs
+            chore
+          requireScope: false
+          # Coding standard: no leading uppercase letter, no trailing period, 72 characters at most.
+          subjectPattern: ^(?![A-Z])(?!.*\.$).{1,72}$
+          subjectPatternError: |
+            The description "{subject}" in the pull request title "{title}" must not start with an uppercase
+            letter, must not end with a period and must be 72 characters or fewer.
+
+  branch-name:
+    name: branch-name
+    runs-on: ubuntu-latest
+    steps:
+      # The branch name is passed through an environment variable, never inlined in the script, to avoid injection.
+      - name: Check branch name
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+        run: |
+          story_required='^(feature|fix|refactor)/us[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$'
+          story_optional='^(docs|chore)/(us[0-9]{2,}-)?[a-z0-9]+(-[a-z0-9]+)*$'
+          if [[ "$BRANCH_NAME" =~ $story_required || "$BRANCH_NAME" =~ $story_optional ]]; then
+            echo "Branch name '$BRANCH_NAME' is valid."
+            exit 0
+          fi
+          echo "::error::Branch name '$BRANCH_NAME' does not follow the coding standard."
+          echo "Expected type/usXX-short-description in lowercase letters, numbers and hyphens:"
+          echo "  feature, fix, refactor: the user story is required (feature/us07-order-status)"
+          echo "  docs, chore: the user story is optional (chore/github-workflows)"
+          exit 1
