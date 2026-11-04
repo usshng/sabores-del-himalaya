@@ -1,0 +1,90 @@
+import { useEffect, useState } from "react";
+import { getMenu, type Product, type ProductCategory } from "@/api/productApi";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+type MenuState =
+  | { kind: "loading" }
+  | { kind: "loaded"; products: Product[] }
+  | { kind: "error" };
+
+// Order in which the categories appear on the restaurant menu (US-01).
+const CATEGORY_ORDER: ProductCategory[] = [
+  "STARTERS",
+  "SALADS",
+  "TANDOORI",
+  "MAIN_COURSES",
+  "DESSERTS",
+  "DRINKS",
+];
+
+const CATEGORY_LABEL: Record<ProductCategory, string> = {
+  STARTERS: "Entrantes",
+  SALADS: "Ensaladas",
+  TANDOORI: "Tandoori",
+  MAIN_COURSES: "Platos principales",
+  DESSERTS: "Postres",
+  DRINKS: "Bebidas",
+};
+
+const priceFormatter = new Intl.NumberFormat("es-ES", {
+  style: "currency",
+  currency: "EUR",
+});
+
+export default function MenuPage() {
+  const [state, setState] = useState<MenuState>({ kind: "loading" });
+
+  useEffect(() => {
+    getMenu()
+      .then((products) => setState({ kind: "loaded", products }))
+      .catch(() => setState({ kind: "error" }));
+  }, []);
+
+  return (
+    <main className="mx-auto max-w-3xl p-6">
+      <h1 className="mb-6 text-3xl font-bold">Sabor del Himalaya · Carta</h1>
+
+      {state.kind === "loading" && (
+        <p className="text-muted-foreground">Cargando la carta…</p>
+      )}
+
+      {state.kind === "error" && (
+        <p className="text-destructive">
+          No se ha podido cargar la carta. Inténtalo de nuevo más tarde.
+        </p>
+      )}
+
+      {state.kind === "loaded" &&
+        CATEGORY_ORDER.map((category) => {
+          const products = state.products.filter(
+            (product) => product.category === category,
+          );
+          if (products.length === 0) {
+            return null;
+          }
+          return (
+            <section key={category} className="mb-8">
+              <h2 className="mb-3 text-xl font-semibold">
+                {CATEGORY_LABEL[category]}
+              </h2>
+              <div className="grid gap-3">
+                {products.map((product) => (
+                  <Card key={product.id}>
+                    <CardHeader>
+                      <CardTitle className="flex justify-between">
+                        <span>{product.name}</span>
+                        <span>{priceFormatter.format(product.price)}</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-muted-foreground">
+                      {product.description}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+    </main>
+  );
+}

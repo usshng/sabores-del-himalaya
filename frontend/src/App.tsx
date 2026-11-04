@@ -1,5 +1,5 @@
-import HealthPage from "@/pages/HealthPage";
+import MenuPage from "@/pages/MenuPage";
 
 export default function App() {
-  return <HealthPage />;
+  return <MenuPage />;
 }
