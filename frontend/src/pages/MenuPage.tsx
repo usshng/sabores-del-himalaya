@@ -44,6 +44,10 @@ export default function MenuPage() {
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="mb-6 text-3xl font-bold">Sabor del Himalaya · Carta</h1>
 
+      <a href="/register" className="mb-6 inline-block underline">
+        Regístrate para hacer pedidos
+      </a>
+
       {state.kind === "loading" && (
         <p className="text-muted-foreground">Cargando la carta…</p>
       )}
