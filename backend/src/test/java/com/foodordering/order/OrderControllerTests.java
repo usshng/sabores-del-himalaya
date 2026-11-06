@@ -134,4 +134,34 @@ class OrderControllerTests {
                 .andExpect(jsonPath("$.items.length()").value(0))
                 .andExpect(jsonPath("$.total").value(0));
     }
+
+    @Test
+    void confirmedOrderIsReceivedWithDateTimeTotalAndContent() throws Exception {
+        addProduct(momos.getId(), 2);
+
+        mockMvc.perform(post("/api/orders/current/confirmation"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("RECEIVED"))
+                .andExpect(jsonPath("$.placedAt").isNotEmpty())
+                .andExpect(jsonPath("$.total").value(15.00))
+                .andExpect(jsonPath("$.items[0].name").value("Momos"));
+
+        CustomerOrder placed = orderRepository.findAll().get(0);
+        org.assertj.core.api.Assertions.assertThat(placed.getCustomer().getLogin()).isEqualTo("ana");
+    }
+
+    @Test
+    void customerStartsNewEmptyOrderAfterConfirming() throws Exception {
+        addProduct(momos.getId(), 2);
+        mockMvc.perform(post("/api/orders/current/confirmation"));
+
+        mockMvc.perform(get("/api/orders/current"))
+                .andExpect(jsonPath("$.items.length()").value(0));
+    }
+
+    @Test
+    void cannotConfirmAnEmptyOrder() throws Exception {
+        mockMvc.perform(post("/api/orders/current/confirmation"))
+                .andExpect(status().isBadRequest());
+    }
 }

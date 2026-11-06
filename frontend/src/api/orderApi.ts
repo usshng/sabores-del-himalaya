@@ -3,9 +3,26 @@ export interface OrderItem {
   name: string;
   unitPrice: number;
   quantity: number;
+  subtotal: number;
 }
 
 export interface CurrentOrder {
+  items: OrderItem[];
+  total: number;
+}
+
+export type OrderStatus =
+  | "RECEIVED"
+  | "IN_PREPARATION"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED";
+
+export interface PlacedOrder {
+  id: number;
+  status: OrderStatus;
+  placedAt: string;
+  total: number;
   items: OrderItem[];
 }
 
@@ -34,15 +51,12 @@ export async function addProductToOrder(
   return (await response.json()) as CurrentOrder;
 }
 
-export interface OrderItem {
-  productId: number;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  subtotal: number;
-}
-
-export interface CurrentOrder {
-  items: OrderItem[];
-  total: number;
+export async function confirmOrder(): Promise<PlacedOrder> {
+  const response = await fetch(`${CURRENT_ORDER_URL}/confirmation`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw new Error(`Confirm order failed with status ${response.status}`);
+  }
+  return (await response.json()) as PlacedOrder;
 }

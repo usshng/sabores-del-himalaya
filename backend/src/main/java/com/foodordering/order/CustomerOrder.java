@@ -56,6 +56,15 @@ public class CustomerOrder {
                         () -> items.add(new OrderItem(product, quantity)));
     }
 
+    // Sends the order to the restaurant (US-14): it becomes Received and keeps the date and time it was placed.
+    public void confirm(LocalDateTime now) {
+        if (items.isEmpty()) {
+            throw new EmptyOrderException();
+        }
+        this.status = OrderStatus.RECEIVED;
+        this.placedAt = now;
+    }
+
     public Long getId() {
         return id;
     }

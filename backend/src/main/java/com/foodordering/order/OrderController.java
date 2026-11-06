@@ -28,4 +28,9 @@ public class OrderController {
             Authentication authentication) {
         return orderService.addProduct(authentication.getName(), request);
     }
+
+    @PostMapping("/confirmation")
+    public PlacedOrderDto confirm(Authentication authentication) {
+        return orderService.confirm(authentication.getName());
+    }
 }

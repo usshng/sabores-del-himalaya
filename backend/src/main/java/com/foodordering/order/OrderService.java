@@ -4,6 +4,8 @@ import com.foodordering.customer.Customer;
 import com.foodordering.customer.CustomerRepository;
 import com.foodordering.product.Product;
 import com.foodordering.product.ProductRepository;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,12 +15,14 @@ public class OrderService {
     private final CustomerOrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final Clock clock;
 
     public OrderService(CustomerOrderRepository orderRepository, CustomerRepository customerRepository,
-            ProductRepository productRepository) {
+            ProductRepository productRepository, Clock clock) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
+        this.clock = clock;
     }
 
     /**
@@ -53,6 +57,22 @@ public class OrderService {
                 .orElseGet(() -> orderRepository.save(new CustomerOrder(customer)));
         order.addProduct(product, request.quantity());
         return CurrentOrderDto.from(order);
+    }
+
+    /**
+     * Confirms the customer's order in progress and sends it to the restaurant with status Received.
+     *
+     * @param login the login of the logged-in customer
+     * @return the placed order with its content, total and the date and time it was placed
+     * @throws EmptyOrderException if the customer has no products in the order
+     */
+    @Transactional
+    public PlacedOrderDto confirm(String login) {
+        Customer customer = findCustomer(login);
+        CustomerOrder order = orderRepository.findByCustomerAndStatus(customer, OrderStatus.IN_PROGRESS)
+                .orElseThrow(EmptyOrderException::new);
+        order.confirm(LocalDateTime.now(clock));
+        return PlacedOrderDto.from(order);
     }
 
     private Customer findCustomer(String login) {
