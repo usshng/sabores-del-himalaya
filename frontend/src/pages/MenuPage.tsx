@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getCurrentUser, logout, type AuthenticatedUser } from "@/api/authApi";
 import { getMenu, type Product, type ProductCategory } from "@/api/productApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -33,6 +34,11 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
 
 export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
+
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+  }, []);
 
   useEffect(() => {
     getMenu()
@@ -44,9 +50,29 @@ export default function MenuPage() {
     <main className="mx-auto max-w-3xl p-6">
       <h1 className="mb-6 text-3xl font-bold">Sabor del Himalaya · Carta</h1>
 
-      <a href="/register" className="mb-6 inline-block underline">
-        Regístrate para hacer pedidos
-      </a>
+      {/* P1 without session, P1b with session (US-10). */}
+      <div className="mb-6 flex gap-4">
+        {user ? (
+          <>
+            <span>Hola, {user.login}</span>
+            <button
+              onClick={() => logout().then(() => window.location.reload())}
+              className="underline"
+            >
+              Cerrar sesión
+            </button>
+          </>
+        ) : (
+          <>
+            <a href="/login" className="underline">
+              Iniciar sesión
+            </a>
+            <a href="/register" className="underline">
+              Regístrate
+            </a>
+          </>
+        )}
+      </div>
 
       {state.kind === "loading" && (
         <p className="text-muted-foreground">Cargando la carta…</p>

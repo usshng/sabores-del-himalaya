@@ -3,15 +3,19 @@ package com.foodordering.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Configuration
 public class SecurityConfig {
 
-    // Public endpoints: health check, the menu and customer registration. Everything else keeps Spring Boot's
-    // default protection (form login and HTTP Basic) until the login user story is implemented.
+    // Public endpoints: health check, the menu, customer registration and activation, and login.
+    // Everything else requires a logged-in session; without one the API answers 401.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -21,10 +25,19 @@ public class SecurityConfig {
                         // Spring forwards failed requests to /error; without this, every error is hidden behind a 401.
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/health", "/api/products").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/activation").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/activation",
+                                "/api/auth/login").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
                 .build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 }

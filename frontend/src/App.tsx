@@ -1,14 +1,19 @@
+import type { ComponentType } from "react";
 import ActivatePage from "@/pages/ActivatePage";
+import LoginPage from "@/pages/LoginPage";
 import MenuPage from "@/pages/MenuPage";
 import RegisterPage from "@/pages/RegisterPage";
+import StaffHomePage from "@/pages/StaffHomePage";
 
 // Minimal routing by URL until the team adds a router.
+const PAGES: Record<string, ComponentType> = {
+  "/register": RegisterPage,
+  "/activate": ActivatePage,
+  "/login": LoginPage,
+  "/staff": StaffHomePage,
+};
+
 export default function App() {
-  if (window.location.pathname === "/register") {
-    return <RegisterPage />;
-  }
-  if (window.location.pathname === "/activate") {
-    return <ActivatePage />;
-  }
-  return <MenuPage />;
+  const Page = PAGES[window.location.pathname] ?? MenuPage;
+  return <Page />;
 }
