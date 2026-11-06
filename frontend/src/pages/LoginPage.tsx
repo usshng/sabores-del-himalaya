@@ -13,7 +13,7 @@ const HOME_BY_ROLE: Record<Role, string> = {
   CUSTOMER: "/",
   OWNER: "/owner/menu",
   CHEF: "/staff",
-  STAFF: "/staff",
+  STAFF: "/staff/orders",
 };
 
 const ERROR_TEXT: Record<LoginError, string> = {
