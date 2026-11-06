@@ -10,13 +10,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    // The health endpoint is public so the environment can be checked without logging in. Everything else keeps
-    // Spring Boot's default protection (form login and HTTP Basic) until the login user story is implemented.
+    // Public endpoints: health check, the menu and customer registration. Everything else keeps Spring Boot's
+    // default protection (form login and HTTP Basic) until the login user story is implemented.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // The REST API is called from the React app, which does not send CSRF tokens.
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(requests -> requests
+                        // Spring forwards failed requests to /error; without this, every error is hidden behind a 401.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/health", "/api/products").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/activation").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())

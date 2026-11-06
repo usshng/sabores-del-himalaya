@@ -32,3 +32,14 @@ export async function registerCustomer(
         : "UNKNOWN";
   throw new Error(error);
 }
+
+// Resolves when the account is activated; rejects if the link is invalid or already used.
+export async function activateAccount(token: string): Promise<void> {
+  const response = await fetch(
+    `${CUSTOMERS_URL}/activation?token=${encodeURIComponent(token)}`,
+    { method: "POST" },
+  );
+  if (!response.ok) {
+    throw new Error(`Activation failed with status ${response.status}`);
+  }
+}

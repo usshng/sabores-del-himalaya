@@ -1,10 +1,5 @@
 export type ProductCategory =
-  | "STARTERS"
-  | "SALADS"
-  | "TANDOORI"
-  | "MAIN_COURSES"
-  | "DESSERTS"
-  | "DRINKS";
+  "STARTERS" | "SALADS" | "TANDOORI" | "MAIN_COURSES" | "DESSERTS" | "DRINKS";
 
 export interface Product {
   id: number;
