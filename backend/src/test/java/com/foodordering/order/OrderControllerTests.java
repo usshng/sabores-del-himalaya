@@ -112,4 +112,26 @@ class OrderControllerTests {
         String body = "{\"productId\": " + productId + ", \"quantity\": " + quantity + "}";
         return mockMvc.perform(post("/api/orders/current/items").contentType(MediaType.APPLICATION_JSON).content(body));
     }
+
+    @Test
+    void reviewShowsSubtotalsAndTotalAmount() throws Exception {
+        Product naan = productRepository.save(new Product("Naan", "Pan al horno", new BigDecimal("3.00"),
+                ProductCategory.STARTERS));
+        addProduct(momos.getId(), 2);
+        addProduct(naan.getId(), 1);
+
+        mockMvc.perform(get("/api/orders/current"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].subtotal").value(15.00))
+                .andExpect(jsonPath("$.total").value(18.00));
+    }
+
+    @Test
+    void emptyOrderHasZeroTotal() throws Exception {
+        mockMvc.perform(get("/api/orders/current"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(0))
+                .andExpect(jsonPath("$.total").value(0));
+    }
 }

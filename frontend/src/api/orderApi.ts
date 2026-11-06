@@ -33,3 +33,16 @@ export async function addProductToOrder(
   }
   return (await response.json()) as CurrentOrder;
 }
+
+export interface OrderItem {
+  productId: number;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface CurrentOrder {
+  items: OrderItem[];
+  total: number;
+}

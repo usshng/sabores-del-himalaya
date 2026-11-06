@@ -7,7 +7,7 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
   currency: "EUR",
 });
 
-// P6: the order the customer is composing (US-11). Total and confirmation arrive with US-13 and US-14.
+// P6: the customer reviews the order in progress with its total (US-11, US-13). Confirmation arrives with US-14.
 export default function OrderPage() {
   const [order, setOrder] = useState<CurrentOrder | null>(null);
 
@@ -34,16 +34,23 @@ export default function OrderPage() {
           Todavía no has añadido ningún producto.
         </p>
       ) : (
-        <ul className="mb-6 divide-y rounded-md border">
-          {order.items.map((item) => (
-            <li key={item.productId} className="flex justify-between p-3">
-              <span>
-                {item.name} × {item.quantity}
-              </span>
-              <span>{priceFormatter.format(item.unitPrice)}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="mb-6 rounded-md border">
+          <ul className="divide-y">
+            {order.items.map((item) => (
+              <li key={item.productId} className="flex justify-between p-3">
+                <span>
+                  {item.name} · {priceFormatter.format(item.unitPrice)} ×{" "}
+                  {item.quantity}
+                </span>
+                <span>{priceFormatter.format(item.subtotal)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-between border-t p-3 font-semibold">
+            <span>Total</span>
+            <span>{priceFormatter.format(order.total)}</span>
+          </div>
+        </div>
       )}
 
       <a href="/" className="underline">
