@@ -1,31 +1,17 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout, type AuthenticatedUser } from "@/api/authApi";
-import { getMenu, type Product, type ProductCategory } from "@/api/productApi";
+import {
+  CATEGORY_LABEL,
+  CATEGORY_ORDER,
+  getMenu,
+  type Product,
+} from "@/api/productApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type MenuState =
   | { kind: "loading" }
   | { kind: "loaded"; products: Product[] }
   | { kind: "error" };
-
-// Order in which the categories appear on the restaurant menu (US-01).
-const CATEGORY_ORDER: ProductCategory[] = [
-  "STARTERS",
-  "SALADS",
-  "TANDOORI",
-  "MAIN_COURSES",
-  "DESSERTS",
-  "DRINKS",
-];
-
-const CATEGORY_LABEL: Record<ProductCategory, string> = {
-  STARTERS: "Entrantes",
-  SALADS: "Ensaladas",
-  TANDOORI: "Tandoori",
-  MAIN_COURSES: "Platos principales",
-  DESSERTS: "Postres",
-  DRINKS: "Bebidas",
-};
 
 const priceFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",

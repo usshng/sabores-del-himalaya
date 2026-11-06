@@ -4,6 +4,8 @@ import LoginPage from "@/pages/LoginPage";
 import MenuPage from "@/pages/MenuPage";
 import RegisterPage from "@/pages/RegisterPage";
 import StaffHomePage from "@/pages/StaffHomePage";
+import OwnerMenuPage from "@/pages/OwnerMenuPage";
+import ProductFormPage from "@/pages/ProductFormPage";
 
 // Minimal routing by URL until the team adds a router.
 const PAGES: Record<string, ComponentType> = {
@@ -11,6 +13,8 @@ const PAGES: Record<string, ComponentType> = {
   "/activate": ActivatePage,
   "/login": LoginPage,
   "/staff": StaffHomePage,
+  "/owner/menu": OwnerMenuPage,
+  "/owner/products/new": ProductFormPage,
 };
 
 export default function App() {

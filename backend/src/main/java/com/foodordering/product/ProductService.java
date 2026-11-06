@@ -24,4 +24,16 @@ public class ProductService {
                 .map(ProductDto::from)
                 .toList();
     }
+
+    /**
+     * Adds a new product to the menu.
+     *
+     * @param request the data entered in the product form
+     * @return the created product, already visible on the menu
+     */
+    @Transactional
+    public ProductDto create(CreateProductRequest request) {
+        Product product = new Product(request.name(), request.description(), request.price(), request.category());
+        return ProductDto.from(productRepository.save(product));
+    }
 }

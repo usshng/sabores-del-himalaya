@@ -1,6 +1,7 @@
 package com.foodordering.product;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -17,6 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ProductControllerTests {
+
+    private static final String NEW_PRODUCT =
+            """
+            {"name": "Naan de ajo", "description": "Pan al horno con ajo", "price": 3.00, "category": "STARTERS"}
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,5 +56,39 @@ class ProductControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Momos"));
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void ownerAddsProductThatAppearsOnTheMenu() throws Exception {
+        mockMvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Naan de ajo"));
+
+        mockMvc.perform(get("/api/products"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].category").value("STARTERS"));
+    }
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    void customerCannotAddProducts() throws Exception {
+        mockMvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void addingProductsRequiresLogin() throws Exception {
+        mockMvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void rejectsProductWithoutValidPrice() throws Exception {
+        String invalidProduct = NEW_PRODUCT.replace("3.00", "-1");
+
+        mockMvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON).content(invalidProduct))
+                .andExpect(status().isBadRequest());
     }
 }

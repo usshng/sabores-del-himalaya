@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/health", "/api/products").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/activation",
                                 "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products").hasRole("OWNER")
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
