@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout, type AuthenticatedUser } from "@/api/authApi";
+import { getCurrentOrder, type CurrentOrder } from "@/api/orderApi";
 import {
   CATEGORY_LABEL,
   CATEGORY_ORDER,
   getMenu,
   type Product,
 } from "@/api/productApi";
+import AddToOrder from "@/components/AddToOrder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type MenuState =
@@ -18,12 +20,23 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
   currency: "EUR",
 });
 
+function countUnits(order: CurrentOrder | null): number {
+  return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+}
+
 export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [order, setOrder] = useState<CurrentOrder | null>(null);
+  const isCustomer = user?.role === "CUSTOMER";
 
   useEffect(() => {
-    getCurrentUser().then(setUser);
+    getCurrentUser().then((current) => {
+      setUser(current);
+      if (current?.role === "CUSTOMER") {
+        getCurrentOrder().then(setOrder);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -41,6 +54,11 @@ export default function MenuPage() {
         {user ? (
           <>
             <span>Hola, {user.login}</span>
+            {isCustomer && (
+              <a href="/order" className="underline">
+                Pedido actual ({countUnits(order)})
+              </a>
+            )}
             <button
               onClick={() => logout().then(() => window.location.reload())}
               className="underline"
@@ -94,6 +112,9 @@ export default function MenuPage() {
                     </CardHeader>
                     <CardContent className="text-muted-foreground">
                       {product.description}
+                      {isCustomer && (
+                        <AddToOrder productId={product.id} onAdded={setOrder} />
+                      )}
                     </CardContent>
                   </Card>
                 ))}
