@@ -11,18 +11,20 @@ import {
 type ActivationState = "activating" | "activated" | "invalid";
 
 export default function ActivatePage() {
-  const [state, setState] = useState<ActivationState>("activating");
+  const token = new URLSearchParams(window.location.search).get("token");
+  // Without a token there is nothing to activate, so the page starts as invalid.
+  const [state, setState] = useState<ActivationState>(
+    token ? "activating" : "invalid",
+  );
 
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get("token");
     if (!token) {
-      setState("invalid");
       return;
     }
     activateAccount(token)
       .then(() => setState("activated"))
       .catch(() => setState("invalid"));
-  }, []);
+  }, [token]);
 
   return (
     <main className="flex min-h-svh items-center justify-center p-4">
