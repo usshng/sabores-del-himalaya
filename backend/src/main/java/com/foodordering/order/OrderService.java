@@ -6,6 +6,7 @@ import com.foodordering.product.Product;
 import com.foodordering.product.ProductRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,5 +78,20 @@ public class OrderService {
 
     private Customer findCustomer(String login) {
         return customerRepository.findByLogin(login).orElseThrow();
+    }
+
+    /**
+     * Returns the orders the customer has placed, from the newest to the oldest, with their current status.
+     *
+     * @param login the login of the logged-in customer
+     * @return the customer's placed orders with date and time, total amount and status
+     */
+    @Transactional(readOnly = true)
+    public List<MyOrderDto> getMyOrders(String login) {
+        Customer customer = findCustomer(login);
+        return orderRepository.findByCustomerAndStatusNotOrderByPlacedAtDesc(customer, OrderStatus.IN_PROGRESS)
+                .stream()
+                .map(MyOrderDto::from)
+                .toList();
     }
 }

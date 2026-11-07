@@ -55,10 +55,16 @@ export default function MenuPage() {
           <>
             <span>Hola, {user.login}</span>
             {isCustomer && (
-              <a href="/order" className="underline">
-                Pedido actual ({countUnits(order)})
-              </a>
+              <>
+                <a href="/order" className="underline">
+                  Pedido actual ({countUnits(order)})
+                </a>
+                <a href="/my-orders" className="underline">
+                  Mis pedidos
+                </a>
+              </>
             )}
+
             <button
               onClick={() => logout().then(() => window.location.reload())}
               className="underline"

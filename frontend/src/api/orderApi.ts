@@ -60,3 +60,18 @@ export async function confirmOrder(): Promise<PlacedOrder> {
   }
   return (await response.json()) as PlacedOrder;
 }
+
+export interface MyOrder {
+  id: number;
+  placedAt: string;
+  total: number;
+  status: OrderStatus;
+}
+
+export async function getMyOrders(): Promise<MyOrder[]> {
+  const response = await fetch("/api/orders");
+  if (!response.ok) {
+    throw new Error(`My orders request failed with status ${response.status}`);
+  }
+  return (await response.json()) as MyOrder[];
+}

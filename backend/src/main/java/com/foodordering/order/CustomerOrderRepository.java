@@ -12,4 +12,6 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     List<CustomerOrder> findByStatusNotOrderByPlacedAtAsc(OrderStatus status);
 
     Optional<CustomerOrder> findByIdAndStatusNot(Long id, OrderStatus status);
+
+    List<CustomerOrder> findByCustomerAndStatusNotOrderByPlacedAtDesc(Customer customer, OrderStatus status);
 }

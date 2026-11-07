@@ -49,8 +49,8 @@ export default function OrderPage() {
           {dateTimeFormatter.format(new Date(placed.placedAt))} por un total de{" "}
           {priceFormatter.format(placed.total)}. Estado: Recibido.
         </p>
-        <a href="/" className="underline">
-          Volver a la carta
+        <a href="/my-orders" className="underline">
+          Ver mis pedidos
         </a>
       </main>
     );
