@@ -6,7 +6,6 @@ import MenuPage from "@/pages/MenuPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
 import OrderPage from "@/pages/OrderPage";
 import OwnerMenuPage from "@/pages/OwnerMenuPage";
-import RegisterPage from "@/pages/RegisterPage";
 import StaffHomePage from "@/pages/StaffHomePage";
 import StaffOrdersPage from "@/pages/StaffOrdersPage";
 import WelcomePage from "@/pages/WelcomePage";
@@ -17,7 +16,8 @@ const PAGES: Record<string, ComponentType> = {
   "/carta": MenuPage,
   // Login is a dialog over the menu (P5 over P1).
   "/login": MenuPage,
-  "/register": RegisterPage,
+  // Registration is a dialog over the menu (P3 over P1).
+  "/register": MenuPage,
   "/activate": ActivatePage,
   "/order": OrderPage,
   "/my-orders": MyOrdersPage,

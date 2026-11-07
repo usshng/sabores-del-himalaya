@@ -10,6 +10,7 @@ import {
 } from "@/api/productApi";
 import AddToOrder from "@/components/AddToOrder";
 import LoginDialog from "@/components/LoginDialog";
+import RegisterDialog from "@/components/RegisterDialog";
 import SiteHeader from "@/components/SiteHeader";
 
 type MenuState =
@@ -17,8 +18,24 @@ type MenuState =
   | { kind: "loaded"; products: Product[] }
   | { kind: "error" };
 
-const LOGIN_PATH = "/login";
+type Dialog = "login" | "register" | null;
+
 const MENU_PATH = "/carta";
+const DIALOG_PATH: Record<Exclude<Dialog, null>, string> = {
+  login: "/login",
+  register: "/register",
+};
+
+// The address decides the dialog, so /login and /register still open it directly.
+function dialogFromLocation(): Dialog {
+  if (window.location.pathname === DIALOG_PATH.login) {
+    return "login";
+  }
+  if (window.location.pathname === DIALOG_PATH.register) {
+    return "register";
+  }
+  return null;
+}
 
 const priceFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",
@@ -30,15 +47,13 @@ function countUnits(order: CurrentOrder | null): number {
 }
 
 // P1 / P1b: the menu, one category per tab (US-01), with quantity and "Añadir" (US-11).
-// The login dialog (P5) opens over it without reloading; at /login it starts open.
+// Login (P5) and registration (P3) open as dialogs over it, without reloading.
 export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [order, setOrder] = useState<CurrentOrder | null>(null);
   const [category, setCategory] = useState<ProductCategory>("STARTERS");
-  const [showLogin, setShowLogin] = useState(
-    () => window.location.pathname === LOGIN_PATH,
-  );
+  const [dialog, setDialog] = useState<Dialog>(dialogFromLocation);
 
   const isCustomer = user?.role === "CUSTOMER";
   const isStaff = user !== null && !isCustomer;
@@ -58,29 +73,35 @@ export default function MenuPage() {
       .catch(() => setState({ kind: "error" }));
   }, []);
 
-  // The browser's back button closes or reopens the dialog, following the address.
+  // The browser's back button closes or reopens the dialogs, following the address.
   useEffect(() => {
     function handlePopState() {
-      setShowLogin(window.location.pathname === LOGIN_PATH);
+      setDialog(dialogFromLocation());
     }
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  function openLogin() {
-    window.history.pushState(null, "", LOGIN_PATH);
-    setShowLogin(true);
+  function openDialog(next: Exclude<Dialog, null>) {
+    window.history.pushState(null, "", DIALOG_PATH[next]);
+    setDialog(next);
   }
 
-  function closeLogin() {
+  // Switching between login and registration replaces the address, so "back" closes the dialog.
+  function switchDialog(next: Exclude<Dialog, null>) {
+    window.history.replaceState(null, "", DIALOG_PATH[next]);
+    setDialog(next);
+  }
+
+  function closeDialog() {
     window.history.replaceState(null, "", MENU_PATH);
-    setShowLogin(false);
+    setDialog(null);
   }
 
   function handleCustomerLoggedIn(loggedIn: AuthenticatedUser) {
     setUser(loggedIn);
     getCurrentOrder().then(setOrder);
-    closeLogin();
+    closeDialog();
   }
 
   const products =
@@ -93,7 +114,7 @@ export default function MenuPage() {
       <SiteHeader
         user={user}
         orderUnits={countUnits(order)}
-        onLogin={openLogin}
+        onLogin={() => openDialog("login")}
       />
 
       <nav className="flex items-center gap-6 overflow-x-auto border-b bg-white px-6 py-4 text-sm">
@@ -162,7 +183,7 @@ export default function MenuPage() {
                     productId={product.id}
                     canOrder={isCustomer}
                     onAdded={setOrder}
-                    onLoginRequired={openLogin}
+                    onLoginRequired={() => openDialog("login")}
                   />
                 )}
               </div>
@@ -171,10 +192,17 @@ export default function MenuPage() {
         </div>
       </main>
 
-      {showLogin && (
+      {dialog === "login" && (
         <LoginDialog
-          onClose={closeLogin}
+          onClose={closeDialog}
           onCustomerLoggedIn={handleCustomerLoggedIn}
+          onSwitchToRegister={() => switchDialog("register")}
+        />
+      )}
+      {dialog === "register" && (
+        <RegisterDialog
+          onClose={closeDialog}
+          onSwitchToLogin={() => switchDialog("login")}
         />
       )}
     </div>

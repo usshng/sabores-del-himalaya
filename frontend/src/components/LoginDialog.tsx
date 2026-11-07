@@ -33,6 +33,7 @@ const ERROR_TEXT: Record<LoginError, string> = {
 interface LoginDialogProps {
   onClose: () => void;
   onCustomerLoggedIn: (user: AuthenticatedUser) => void;
+  onSwitchToRegister: () => void;
 }
 
 const fieldClass =
@@ -42,6 +43,7 @@ const fieldClass =
 export default function LoginDialog({
   onClose,
   onCustomerLoggedIn,
+  onSwitchToRegister,
 }: LoginDialogProps) {
   const [userLogin, setUserLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -106,12 +108,13 @@ export default function LoginDialog({
         </h2>
         <p className="mb-8 mt-2 text-center text-sm text-neutral-400">
           ¿Usuario nuevo?{" "}
-          <a
-            href="/register"
+          <button
+            type="button"
+            onClick={onSwitchToRegister}
             className="inline-flex items-center gap-1 font-semibold text-white hover:underline"
           >
             Regístrate <ArrowRight className="size-4" />
-          </a>
+          </button>
         </p>
 
         <form onSubmit={handleSubmit} className="grid gap-5">
