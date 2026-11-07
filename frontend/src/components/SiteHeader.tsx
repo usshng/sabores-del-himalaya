@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { logout, type AuthenticatedUser } from "@/api/authApi";
 
 interface SiteHeaderProps {
@@ -31,11 +32,23 @@ export default function SiteHeader({
         Sabor del Himalaya
       </a>
       <nav className="flex flex-wrap justify-end gap-x-6 gap-y-1 text-sm">
-        {(isCustomer || !user) && (
+        {isCustomer && (
           <a href="/order" className="hover:underline">
-            Pedido actual{isCustomer ? ` (${orderUnits ?? 0})` : ""}
+            Pedido actual ({orderUnits ?? 0})
           </a>
         )}
+
+        {/* Visitors need to log in to have an order (US-10): on the menu this opens the login dialog. */}
+        {!user &&
+          (onLogin ? (
+            <button onClick={onLogin} className="hover:underline">
+              Pedido actual
+            </button>
+          ) : (
+            <a href="/login" className="hover:underline">
+              Pedido actual
+            </a>
+          ))}
         {isCustomer && (
           <a href="/my-orders" className="hover:underline">
             Mis pedidos
@@ -43,7 +56,7 @@ export default function SiteHeader({
         )}
         {user ? (
           <button
-            onClick={() => logout().then(() => (window.location.href = "/"))}
+            onClick={() => logout().then(() => navigate("/"))}
             className="hover:underline"
           >
             Cerrar sesión

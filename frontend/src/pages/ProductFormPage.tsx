@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { getCurrentUser } from "@/api/authApi";
 import {
@@ -27,7 +28,7 @@ export default function ProductFormPage() {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user?.role !== "OWNER") {
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       if (productId !== null) {
@@ -54,7 +55,7 @@ export default function ProductFormPage() {
         : updateProduct(productId, request);
     save
       .then(() => {
-        window.location.href = OWNER_MENU_URL;
+        navigate(OWNER_MENU_URL);
       })
       .catch(() => {
         setError(true);

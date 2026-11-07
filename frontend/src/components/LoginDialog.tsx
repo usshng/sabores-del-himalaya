@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, X } from "lucide-react";
 import {
@@ -57,7 +58,7 @@ export default function LoginDialog({
           onCustomerLoggedIn(user);
           return;
         }
-        window.location.href = STAFF_HOME_BY_ROLE[user.role];
+        navigate(STAFF_HOME_BY_ROLE[user.role]);
       })
       .catch((reason: Error) => {
         setError(reason.message as LoginError);

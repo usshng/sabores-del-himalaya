@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "@/api/authApi";
 import {
@@ -21,7 +22,7 @@ export default function OwnerMenuPage() {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user?.role !== "OWNER") {
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       getMenu().then(setProducts);
@@ -52,7 +53,7 @@ export default function OwnerMenuPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Gestión de la carta</h1>
         <button
-          onClick={() => logout().then(() => (window.location.href = "/"))}
+          onClick={() => logout().then(() => navigate("/"))}
           className="underline"
         >
           Cerrar sesión

@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { getCurrentUser } from "@/api/authApi";
 import { getDailyBilling, type DailyBilling } from "@/api/billingApi";
@@ -21,7 +22,7 @@ export default function BillingPage() {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user?.role !== "OWNER") {
-        window.location.href = "/login";
+        navigate("/login");
       }
     });
   }, []);

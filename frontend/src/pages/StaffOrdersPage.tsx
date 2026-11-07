@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "@/api/authApi";
 import type { OrderStatus } from "@/api/orderApi";
@@ -43,7 +44,7 @@ export default function StaffOrdersPage() {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user?.role !== "STAFF") {
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       getReceivedOrders().then(setOrders);
@@ -79,7 +80,7 @@ export default function StaffOrdersPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Pedidos recibidos</h1>
         <button
-          onClick={() => logout().then(() => (window.location.href = "/"))}
+          onClick={() => logout().then(() => navigate("/"))}
           className="underline"
         >
           Cerrar sesión

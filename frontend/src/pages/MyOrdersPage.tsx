@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/api/authApi";
 import {
@@ -35,7 +36,7 @@ export default function MyOrdersPage() {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user?.role !== "CUSTOMER") {
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       getMyOrders().then(setOrders);

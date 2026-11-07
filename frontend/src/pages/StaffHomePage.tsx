@@ -1,3 +1,4 @@
+import { navigate } from "@/lib/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout, type AuthenticatedUser } from "@/api/authApi";
 
@@ -14,7 +15,7 @@ export default function StaffHomePage() {
   useEffect(() => {
     getCurrentUser().then((current) => {
       if (!current) {
-        window.location.href = "/login";
+        navigate("/login");
         return;
       }
       setUser(current);
@@ -32,7 +33,7 @@ export default function StaffHomePage() {
         Has iniciado sesión como {ROLE_LABEL[user.role]} ({user.login}).
       </p>
       <button
-        onClick={() => logout().then(() => (window.location.href = "/"))}
+        onClick={() => logout().then(() => navigate("/"))}
         className="underline"
       >
         Cerrar sesión
