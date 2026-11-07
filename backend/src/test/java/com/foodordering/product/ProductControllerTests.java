@@ -141,4 +141,33 @@ class ProductControllerTests {
         mockMvc.perform(put("/api/products/1").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void ownerWithdrawsProductAndCustomersNoLongerSeeIt() throws Exception {
+        Product momos = productRepository.save(new Product("Momos", "Empanadillas al vapor",
+                new BigDecimal("7.50"), ProductCategory.STARTERS));
+
+        mockMvc.perform(post("/api/products/" + momos.getId() + "/withdrawal"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/products"))
+                .andExpect(jsonPath("$.length()").value(0));
+        // Withdrawn, not deleted: it is kept for the daily menus of Sprint 2.
+        org.assertj.core.api.Assertions.assertThat(productRepository.findById(momos.getId())).isPresent();
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void withdrawingUnknownProductIsNotFound() throws Exception {
+        mockMvc.perform(post("/api/products/999/withdrawal"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    void customerCannotWithdrawProducts() throws Exception {
+        mockMvc.perform(post("/api/products/1/withdrawal"))
+                .andExpect(status().isForbidden());
+    }
 }

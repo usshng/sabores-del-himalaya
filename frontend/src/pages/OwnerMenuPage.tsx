@@ -4,6 +4,7 @@ import {
   CATEGORY_LABEL,
   CATEGORY_ORDER,
   getMenu,
+  withdrawProduct,
   type Product,
 } from "@/api/productApi";
 
@@ -12,9 +13,10 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
   currency: "EUR",
 });
 
-// P8: menu management for the owner (US-02; modify and withdraw arrive with US-03 and US-04).
+// P8: menu management for the owner: add (US-02), modify (US-03) and withdraw (US-04) products.
 export default function OwnerMenuPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -25,6 +27,21 @@ export default function OwnerMenuPage() {
       getMenu().then(setProducts);
     });
   }, []);
+
+  function handleWithdraw(product: Product) {
+    if (!window.confirm(`¿Retirar "${product.name}" de la carta?`)) {
+      return;
+    }
+    setError(false);
+    withdrawProduct(product.id)
+      .then(() =>
+        setProducts(
+          (current) =>
+            current?.filter((item) => item.id !== product.id) ?? null,
+        ),
+      )
+      .catch(() => setError(true));
+  }
 
   if (!products) {
     return null;
@@ -48,6 +65,12 @@ export default function OwnerMenuPage() {
       >
         Añadir producto
       </a>
+
+      {error && (
+        <p className="mb-4 text-sm text-destructive">
+          No se ha podido retirar el producto.
+        </p>
+      )}
 
       {CATEGORY_ORDER.map((category) => {
         const inCategory = products.filter(
@@ -76,6 +99,12 @@ export default function OwnerMenuPage() {
                       >
                         Modificar
                       </a>
+                      <button
+                        onClick={() => handleWithdraw(product)}
+                        className="text-sm text-destructive underline"
+                      >
+                        Retirar
+                      </button>
                     </span>
                   </li>
                 ))}

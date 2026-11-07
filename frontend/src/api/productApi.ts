@@ -81,3 +81,12 @@ export async function updateProduct(
   }
   return (await response.json()) as Product;
 }
+
+export async function withdrawProduct(id: number): Promise<void> {
+  const response = await fetch(`${PRODUCTS_URL}/${id}/withdrawal`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw new Error(`Withdraw product failed with status ${response.status}`);
+  }
+}

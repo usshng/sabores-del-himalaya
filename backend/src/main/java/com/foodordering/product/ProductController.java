@@ -42,4 +42,10 @@ public class ProductController {
     public ProductDto update(@PathVariable Long id, @Valid @RequestBody CreateProductRequest request) {
         return productService.update(id, request);
     }
+
+    @PostMapping("/{id}/withdrawal")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void withdraw(@PathVariable Long id) {
+        productService.withdraw(id);
+    }
 }

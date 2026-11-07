@@ -65,4 +65,16 @@ public class ProductService {
         product.update(request.name(), request.description(), request.price(), request.category());
         return ProductDto.from(product);
     }
+
+    /**
+     * Withdraws a product from the menu; it stays stored so it can still be used in daily menus.
+     *
+     * @param id the product selected by the owner
+     * @throws ProductNotFoundException if the product does not exist
+     */
+    @Transactional
+    public void withdraw(Long id) {
+        Product product = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
+        product.withdraw();
+    }
 }
