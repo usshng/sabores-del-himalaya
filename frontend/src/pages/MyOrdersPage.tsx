@@ -114,7 +114,7 @@ export default function MyOrdersPage() {
         </ul>
       )}
 
-      <a href="/" className="underline">
+      <a href="/carta" className="underline">
         Volver a la carta
       </a>
     </main>

@@ -10,7 +10,7 @@ import {
 
 // Where each role lands after logging in (US-10). Staff screens arrive with their own user stories.
 const HOME_BY_ROLE: Record<Role, string> = {
-  CUSTOMER: "/",
+  CUSTOMER: "/carta",
   OWNER: "/owner/menu",
   CHEF: "/staff",
   STAFF: "/staff/orders",

@@ -1,0 +1,51 @@
+import { logout, type AuthenticatedUser } from "@/api/authApi";
+
+interface SiteHeaderProps {
+  user: AuthenticatedUser | null;
+  orderUnits?: number;
+  backHref?: string;
+}
+
+// Black header of the customer screens, as in the screen flow (ESQ): back link, name and session links.
+export default function SiteHeader({
+  user,
+  orderUnits,
+  backHref = "/",
+}: SiteHeaderProps) {
+  const isCustomer = user?.role === "CUSTOMER";
+
+  return (
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 bg-black px-6 py-5 text-white">
+      <a href={backHref} className="text-sm hover:underline">
+        Volver
+      </a>
+      <a href="/" className="text-center text-xl font-semibold md:text-2xl">
+        Sabor del Himalaya
+      </a>
+      <nav className="flex flex-wrap justify-end gap-x-6 gap-y-1 text-sm">
+        {(isCustomer || !user) && (
+          <a href="/order" className="hover:underline">
+            Pedido actual{isCustomer ? ` (${orderUnits ?? 0})` : ""}
+          </a>
+        )}
+        {isCustomer && (
+          <a href="/my-orders" className="hover:underline">
+            Mis pedidos
+          </a>
+        )}
+        {user ? (
+          <button
+            onClick={() => logout().then(() => (window.location.href = "/"))}
+            className="hover:underline"
+          >
+            Cerrar sesión
+          </button>
+        ) : (
+          <a href="/login" className="hover:underline">
+            Iniciar sesión
+          </a>
+        )}
+      </nav>
+    </header>
+  );
+}

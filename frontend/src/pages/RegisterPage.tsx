@@ -72,7 +72,7 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <a href="/" className="font-medium underline">
+            <a href="/carta" className="font-medium underline">
               Aceptar
             </a>
           </CardContent>

@@ -102,7 +102,7 @@ export default function OrderPage() {
       )}
 
       <div>
-        <a href="/" className="underline">
+        <a href="/carta" className="underline">
           Volver a la carta
         </a>
       </div>

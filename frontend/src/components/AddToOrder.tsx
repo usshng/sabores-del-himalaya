@@ -1,17 +1,28 @@
 import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { addProductToOrder, type CurrentOrder } from "@/api/orderApi";
 
 interface AddToOrderProps {
   productId: number;
+  canOrder: boolean;
   onAdded: (order: CurrentOrder) => void;
 }
 
-// Quantity selector and "Añadir" button shown on each product of the menu (US-11).
-export default function AddToOrder({ productId, onAdded }: AddToOrderProps) {
+// Quantity selector (− 1 +) and "Añadir" button of each product (US-11).
+// Visitors without a session are sent to log in: only registered customers can order (US-10).
+export default function AddToOrder({
+  productId,
+  canOrder,
+  onAdded,
+}: AddToOrderProps) {
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState(false);
 
   function handleAdd() {
+    if (!canOrder) {
+      window.location.href = "/login";
+      return;
+    }
     setError(false);
     addProductToOrder(productId, quantity)
       .then((order) => {
@@ -22,27 +33,32 @@ export default function AddToOrder({ productId, onAdded }: AddToOrderProps) {
   }
 
   return (
-    <div className="mt-3 flex items-center gap-2">
-      <input
-        type="number"
-        min="1"
-        value={quantity}
-        onChange={(event) =>
-          setQuantity(Math.max(1, Number(event.target.value)))
-        }
-        aria-label="Cantidad"
-        className="w-16 rounded-md border px-2 py-1"
-      />
-      <button
-        onClick={handleAdd}
-        className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
-      >
-        Añadir
-      </button>
+    <div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+          aria-label="Quitar uno"
+          className="flex size-7 items-center justify-center rounded-full border hover:bg-neutral-100"
+        >
+          <Minus className="size-3.5" />
+        </button>
+        <span className="w-6 text-center tabular-nums">{quantity}</span>
+        <button
+          onClick={() => setQuantity((current) => current + 1)}
+          aria-label="Añadir uno"
+          className="flex size-7 items-center justify-center rounded-full border hover:bg-neutral-100"
+        >
+          <Plus className="size-3.5" />
+        </button>
+        <button
+          onClick={handleAdd}
+          className="ml-1 rounded-md bg-neutral-200 px-3 py-1 text-sm font-medium hover:bg-neutral-300"
+        >
+          Añadir
+        </button>
+      </div>
       {error && (
-        <span className="text-sm text-destructive">
-          No se ha podido añadir.
-        </span>
+        <p className="mt-1 text-xs text-destructive">No se ha podido añadir.</p>
       )}
     </div>
   );

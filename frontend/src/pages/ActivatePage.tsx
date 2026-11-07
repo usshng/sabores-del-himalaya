@@ -45,7 +45,7 @@ export default function ActivatePage() {
         {state !== "activating" && (
           <CardContent>
             <a
-              href={state === "activated" ? "/login" : "/"}
+              href={state === "activated" ? "/login" : "/carta"}
               className="font-medium underline"
             >
               {state === "activated" ? "Iniciar sesión" : "Volver a la carta"}
