@@ -128,3 +128,27 @@
     @apply font-sans;
   }
 }
+
+/* Smooth transitions between pages (View Transitions API). Browsers without support just navigate. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 400ms;
+  animation-timing-function: ease-in-out;
+}
+
+/* The restaurant name travels from the welcome title (P0) to the header of the menu (P1). */
+::view-transition-group(brand) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Users who prefer less motion get no animation. */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

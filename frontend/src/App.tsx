@@ -1,4 +1,5 @@
-import type { ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
+import { flushSync } from "react-dom";
 import ActivatePage from "@/pages/ActivatePage";
 import BillingPage from "@/pages/BillingPage";
 import MenuPage from "@/pages/MenuPage";
@@ -29,7 +30,60 @@ const PAGES: Record<string, ComponentType> = {
   "/owner/billing": BillingPage,
 };
 
+function currentLocation(): string {
+  return window.location.pathname + window.location.search;
+}
+
+// Shows the new page inside a view transition when the browser supports it, so pages change smoothly.
+function showWithTransition(update: () => void) {
+  if (!document.startViewTransition) {
+    update();
+    return;
+  }
+  document.startViewTransition(() => flushSync(update));
+}
+
 export default function App() {
-  const Page = PAGES[window.location.pathname] ?? WelcomePage;
-  return <Page />;
+  const [location, setLocation] = useState(currentLocation);
+
+  useEffect(() => {
+    // Internal links change the page without reloading it.
+    function handleClick(event: MouseEvent) {
+      const link = (event.target as Element).closest("a");
+      if (
+        !link ||
+        link.target ||
+        link.origin !== window.location.origin ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      event.preventDefault();
+      const next = link.pathname + link.search;
+      window.history.pushState(null, "", next);
+      showWithTransition(() => setLocation(next));
+    }
+
+    // The browser's back and forward buttons show the page of the address.
+    function handlePopState() {
+      showWithTransition(() => setLocation(currentLocation()));
+    }
+
+    document.addEventListener("click", handleClick);
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  const pathname = location.split("?")[0];
+  const Page = PAGES[pathname] ?? WelcomePage;
+  // Each address gets a fresh page, except the menu and its login dialog, which are the same screen.
+  const pageKey = Page === MenuPage ? "menu" : location;
+  return <Page key={pageKey} />;
 }

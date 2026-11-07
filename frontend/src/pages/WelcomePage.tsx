@@ -12,7 +12,11 @@ export default function WelcomePage() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
 
       <section className="relative z-10 flex flex-1 flex-col justify-center px-6 py-24 md:px-16">
-        <h1 className="text-6xl font-black uppercase leading-[0.9] tracking-tight md:text-8xl lg:text-9xl">
+        {/* Same transition name as the header title, so the name travels from here to the menu. */}
+        <h1
+          className="text-6xl font-black uppercase leading-[0.9] tracking-tight md:text-8xl lg:text-9xl"
+          style={{ viewTransitionName: "brand" }}
+        >
           Sabor del
           <br />
           Himalaya.

@@ -136,11 +136,15 @@ export default function MenuPage() {
           </p>
         )}
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* The key recreates the grid on every tab change, so the cards animate in again. */}
+        <div
+          key={category}
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+        >
           {products.map((product) => (
             <article
               key={product.id}
-              className="flex flex-col rounded-md bg-white p-5 shadow-sm"
+              className="flex flex-col rounded-md bg-white p-5 shadow-sm duration-500 animate-in fade-in slide-in-from-bottom-4"
             >
               <h2 className="mb-2 text-center font-semibold">{product.name}</h2>
               <p className="mb-6 flex-1 text-center text-sm text-neutral-600">

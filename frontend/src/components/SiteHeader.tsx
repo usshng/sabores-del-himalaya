@@ -22,7 +22,12 @@ export default function SiteHeader({
       <a href={backHref} className="text-sm hover:underline">
         Volver
       </a>
-      <a href="/" className="text-center text-xl font-semibold md:text-2xl">
+      {/* Same transition name as the welcome title (P0), so the name travels between both pages. */}
+      <a
+        href="/"
+        className="text-center text-xl font-semibold md:text-2xl"
+        style={{ viewTransitionName: "brand" }}
+      >
         Sabor del Himalaya
       </a>
       <nav className="flex flex-wrap justify-end gap-x-6 gap-y-1 text-sm">
