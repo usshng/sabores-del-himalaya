@@ -139,19 +139,22 @@ export default function MenuPage() {
         {/* The key recreates the grid on every tab change, so the cards animate in again. */}
         <div
           key={category}
-          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {products.map((product) => (
             <article
               key={product.id}
-              className="flex flex-col rounded-md bg-white p-5 shadow-sm duration-500 animate-in fade-in slide-in-from-bottom-4"
+              className="flex flex-col rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition duration-500 animate-in fade-in slide-in-from-bottom-4 hover:shadow-md"
             >
-              <h2 className="mb-2 text-center font-semibold">{product.name}</h2>
-              <p className="mb-6 flex-1 text-center text-sm text-neutral-600">
+              <p className="mb-1.5 text-xs tracking-wide text-neutral-400">
+                {CATEGORY_LABEL[product.category]}
+              </p>
+              <h2 className="mb-1.5 text-lg font-semibold">{product.name}</h2>
+              <p className="flex-1 text-sm leading-relaxed text-neutral-600">
                 {product.description}
               </p>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-medium">
+              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-neutral-200 pt-4">
+                <span className="mr-auto text-lg font-semibold">
                   {priceFormatter.format(product.price)}
                 </span>
                 {!isStaff && (
