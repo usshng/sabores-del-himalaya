@@ -63,9 +63,20 @@ export default function OwnerMenuPage() {
             ) : (
               <ul className="divide-y rounded-md border">
                 {inCategory.map((product) => (
-                  <li key={product.id} className="flex justify-between p-3">
+                  <li
+                    key={product.id}
+                    className="flex items-center justify-between p-3"
+                  >
                     <span>{product.name}</span>
-                    <span>{priceFormatter.format(product.price)}</span>
+                    <span className="flex items-center gap-4">
+                      <span>{priceFormatter.format(product.price)}</span>
+                      <a
+                        href={`/owner/products/edit?id=${product.id}`}
+                        className="text-sm underline"
+                      >
+                        Modificar
+                      </a>
+                    </span>
                   </li>
                 ))}
               </ul>

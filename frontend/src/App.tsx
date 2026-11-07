@@ -21,6 +21,7 @@ const PAGES: Record<string, ComponentType> = {
   "/order": OrderPage,
   "/staff/orders": StaffOrdersPage,
   "/my-orders": MyOrdersPage,
+  "/owner/products/edit": ProductFormPage,
 };
 
 export default function App() {

@@ -4,14 +4,19 @@ import {
   CATEGORY_LABEL,
   CATEGORY_ORDER,
   createProduct,
+  getProduct,
+  updateProduct,
   type ProductCategory,
 } from "@/api/productApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const OWNER_MENU_URL = "/owner/menu";
 
-// P9: form to add a product to the menu (US-02).
+// P9: form to add a product (US-02) or, with ?id=…, to modify an existing one (US-03).
 export default function ProductFormPage() {
+  const idParam = new URLSearchParams(window.location.search).get("id");
+  const productId = idParam ? Number(idParam) : null;
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -23,15 +28,31 @@ export default function ProductFormPage() {
     getCurrentUser().then((user) => {
       if (user?.role !== "OWNER") {
         window.location.href = "/login";
+        return;
+      }
+      if (productId !== null) {
+        getProduct(productId)
+          .then((product) => {
+            setName(product.name);
+            setDescription(product.description ?? "");
+            setPrice(String(product.price));
+            setCategory(product.category);
+          })
+          .catch(() => setError(true));
       }
     });
-  }, []);
+  }, [productId]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSending(true);
     setError(false);
-    createProduct({ name, description, price: Number(price), category })
+    const request = { name, description, price: Number(price), category };
+    const save =
+      productId === null
+        ? createProduct(request)
+        : updateProduct(productId, request);
+    save
       .then(() => {
         window.location.href = OWNER_MENU_URL;
       })
@@ -45,7 +66,9 @@ export default function ProductFormPage() {
     <main className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Nuevo producto</CardTitle>
+          <CardTitle>
+            {productId === null ? "Nuevo producto" : "Modificar producto"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-3">

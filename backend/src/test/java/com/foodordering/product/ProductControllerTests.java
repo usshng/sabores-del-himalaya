@@ -2,6 +2,7 @@ package com.foodordering.product;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,5 +91,54 @@ class ProductControllerTests {
 
         mockMvc.perform(post("/api/products").contentType(MediaType.APPLICATION_JSON).content(invalidProduct))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void ownerSeesCurrentDataOfProduct() throws Exception {
+        Product momos = productRepository.save(new Product("Momos", "Empanadillas al vapor",
+                new BigDecimal("7.50"), ProductCategory.STARTERS));
+
+        mockMvc.perform(get("/api/products/" + momos.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Momos"))
+                .andExpect(jsonPath("$.description").value("Empanadillas al vapor"))
+                .andExpect(jsonPath("$.price").value(7.50))
+                .andExpect(jsonPath("$.category").value("STARTERS"));
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void ownerModifiesProductAndMenuShowsChanges() throws Exception {
+        Product momos = productRepository.save(new Product("Momos", "Empanadillas al vapor",
+                new BigDecimal("7.50"), ProductCategory.STARTERS));
+        String changes =
+                """
+                {"name": "Momos de cerdo", "description": "Con salsa picante", "price": 8.00,
+                 "category": "MAIN_COURSES"}
+                """;
+
+        mockMvc.perform(put("/api/products/" + momos.getId())
+                        .contentType(MediaType.APPLICATION_JSON).content(changes))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/products"))
+                .andExpect(jsonPath("$[0].name").value("Momos de cerdo"))
+                .andExpect(jsonPath("$[0].price").value(8.00))
+                .andExpect(jsonPath("$[0].category").value("MAIN_COURSES"));
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void modifyingUnknownProductIsNotFound() throws Exception {
+        mockMvc.perform(put("/api/products/999").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    void customerCannotModifyProducts() throws Exception {
+        mockMvc.perform(put("/api/products/1").contentType(MediaType.APPLICATION_JSON).content(NEW_PRODUCT))
+                .andExpect(status().isForbidden());
     }
 }

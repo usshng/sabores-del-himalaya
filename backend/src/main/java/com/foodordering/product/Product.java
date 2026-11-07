@@ -70,4 +70,11 @@ public class Product {
     public void withdraw() {
         this.onMenu = false;
     }
+
+    public void update(String name, String description, BigDecimal price, ProductCategory category) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.category = category;
+    }
 }

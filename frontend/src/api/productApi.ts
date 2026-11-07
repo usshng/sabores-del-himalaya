@@ -58,3 +58,26 @@ export async function createProduct(
   }
   return (await response.json()) as Product;
 }
+
+export async function getProduct(id: number): Promise<Product> {
+  const response = await fetch(`${PRODUCTS_URL}/${id}`);
+  if (!response.ok) {
+    throw new Error(`Product request failed with status ${response.status}`);
+  }
+  return (await response.json()) as Product;
+}
+
+export async function updateProduct(
+  id: number,
+  request: CreateProductRequest,
+): Promise<Product> {
+  const response = await fetch(`${PRODUCTS_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    throw new Error(`Update product failed with status ${response.status}`);
+  }
+  return (await response.json()) as Product;
+}
