@@ -1,6 +1,7 @@
 package com.foodordering.order;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -111,5 +113,38 @@ class StaffOrderControllerTests {
         order.addProduct(momos, 2);
         order.confirm(placedAt);
         return orderRepository.save(order);
+    }
+
+    @Test
+    void staffChangesStatusAndItIsKept() throws Exception {
+        CustomerOrder order = placeOrder(LocalDateTime.of(2026, 11, 6, 13, 0));
+
+        changeStatus(order.getId(), "IN_PREPARATION")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
+
+        mockMvc.perform(get("/api/staff/orders"))
+                .andExpect(jsonPath("$[0].status").value("IN_PREPARATION"));
+    }
+
+    @Test
+    void staffCannotCancelOrders() throws Exception {
+        CustomerOrder order = placeOrder(LocalDateTime.of(2026, 11, 6, 13, 0));
+
+        changeStatus(order.getId(), "CANCELLED").andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void staffCannotMoveOrderBackToReceived() throws Exception {
+        CustomerOrder order = placeOrder(LocalDateTime.of(2026, 11, 6, 13, 0));
+
+        changeStatus(order.getId(), "RECEIVED").andExpect(status().isBadRequest());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions changeStatus(Long id, String newStatus)
+            throws Exception {
+        return mockMvc.perform(patch("/api/staff/orders/" + id + "/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\": \"" + newStatus + "\"}"));
     }
 }

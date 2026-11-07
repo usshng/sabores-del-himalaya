@@ -38,4 +38,22 @@ public class StaffOrderService {
                 .map(ReceivedOrderDetailDto::from)
                 .orElseThrow(OrderNotFoundException::new);
     }
+
+    /**
+     * Changes the status of a confirmed order, so the customer can follow it.
+     *
+     * @param id the order selected in the list
+     * @param request the new status chosen by the staff
+     * @return the order with its new status
+     * @throws OrderNotFoundException if there is no confirmed order with that id
+     * @throws InvalidStatusChangeException if the new status is not one the staff can set
+     * @throws CancelledOrderException if the order was cancelled by the customer
+     */
+    @Transactional
+    public ReceivedOrderDetailDto updateStatus(Long id, UpdateOrderStatusRequest request) {
+        CustomerOrder order = orderRepository.findByIdAndStatusNot(id, OrderStatus.IN_PROGRESS)
+                .orElseThrow(OrderNotFoundException::new);
+        order.changeStatus(request.status());
+        return ReceivedOrderDetailDto.from(order);
+    }
 }

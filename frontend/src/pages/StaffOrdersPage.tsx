@@ -4,6 +4,7 @@ import type { OrderStatus } from "@/api/orderApi";
 import {
   getReceivedOrder,
   getReceivedOrders,
+  updateOrderStatus,
   type ReceivedOrder,
   type ReceivedOrderDetail,
 } from "@/api/staffOrderApi";
@@ -16,6 +17,13 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   CANCELLED: "Cancelado",
 };
 
+// Statuses the staff can set (US-19); only the customer can cancel (US-16).
+const STAFF_STATUSES: OrderStatus[] = [
+  "IN_PREPARATION",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+];
+
 const priceFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",
   currency: "EUR",
@@ -26,10 +34,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   timeStyle: "short",
 });
 
-// P13: orders received by the restaurant (US-18). Status changes arrive with US-19.
+// P13: orders received by the restaurant (US-18) and their status changes (US-19).
 export default function StaffOrdersPage() {
   const [orders, setOrders] = useState<ReceivedOrder[] | null>(null);
   const [selected, setSelected] = useState<ReceivedOrderDetail | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -40,6 +49,26 @@ export default function StaffOrdersPage() {
       getReceivedOrders().then(setOrders);
     });
   }, []);
+
+  function handleStatusChange(status: OrderStatus) {
+    if (!selected) {
+      return;
+    }
+    setError(false);
+    updateOrderStatus(selected.id, status)
+      .then((updated) => {
+        setSelected(updated);
+        setOrders(
+          (current) =>
+            current?.map((order) =>
+              order.id === updated.id
+                ? { ...order, status: updated.status }
+                : order,
+            ) ?? null,
+        );
+      })
+      .catch(() => setError(true));
+  }
 
   if (!orders) {
     return null;
@@ -65,7 +94,10 @@ export default function StaffOrdersPage() {
             {orders.map((order) => (
               <li key={order.id}>
                 <button
-                  onClick={() => getReceivedOrder(order.id).then(setSelected)}
+                  onClick={() => {
+                    setError(false);
+                    getReceivedOrder(order.id).then(setSelected);
+                  }}
                   className={`w-full p-3 text-left hover:bg-muted ${
                     selected?.id === order.id ? "bg-muted" : ""
                   }`}
@@ -88,7 +120,7 @@ export default function StaffOrdersPage() {
           {selected ? (
             <div className="rounded-md border p-4">
               <h2 className="mb-1 text-lg font-semibold">
-                Pedido #{selected.id}
+                Pedido #{selected.id} · {STATUS_LABEL[selected.status]}
               </h2>
               <p className="mb-4 text-sm text-muted-foreground">
                 {selected.customerName} · {selected.customerAddress}
@@ -106,10 +138,34 @@ export default function StaffOrdersPage() {
                   </li>
                 ))}
               </ul>
-              <div className="flex justify-between font-semibold">
+              <div className="mb-4 flex justify-between font-semibold">
                 <span>Total</span>
                 <span>{priceFormatter.format(selected.total)}</span>
               </div>
+
+              {selected.status === "CANCELLED" ? (
+                <p className="text-sm text-muted-foreground">
+                  El cliente canceló este pedido: ya no puede cambiar de estado.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {STAFF_STATUSES.map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusChange(status)}
+                      disabled={selected.status === status}
+                      className="rounded-md border px-3 py-1 text-sm hover:bg-muted disabled:opacity-50"
+                    >
+                      {STATUS_LABEL[status]}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {error && (
+                <p className="mt-3 text-sm text-destructive">
+                  No se ha podido cambiar el estado.
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-muted-foreground">

@@ -17,9 +17,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class CustomerOrder {
+
+    private static final Set<OrderStatus> STAFF_STATUSES =
+            Set.of(OrderStatus.IN_PREPARATION, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,6 +69,17 @@ public class CustomerOrder {
         this.placedAt = now;
     }
 
+    // Staff move the order forward (US-19); only the customer can cancel it (US-16).
+    public void changeStatus(OrderStatus newStatus) {
+        if (status == OrderStatus.CANCELLED) {
+            throw new CancelledOrderException();
+        }
+        if (!STAFF_STATUSES.contains(newStatus)) {
+            throw new InvalidStatusChangeException();
+        }
+        this.status = newStatus;
+    }
+
     public Long getId() {
         return id;
     }
@@ -88,7 +103,7 @@ public class CustomerOrder {
     // Total amount (US-13): the price of each product multiplied by its quantity, added up.
     public BigDecimal getTotal() {
         return items.stream()
-            .map(OrderItem::getSubtotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(OrderItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

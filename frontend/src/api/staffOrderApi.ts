@@ -32,3 +32,18 @@ export async function getReceivedOrder(
   }
   return (await response.json()) as ReceivedOrderDetail;
 }
+
+export async function updateOrderStatus(
+  id: number,
+  status: OrderStatus,
+): Promise<ReceivedOrderDetail> {
+  const response = await fetch(`${STAFF_ORDERS_URL}/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) {
+    throw new Error(`Status update failed with status ${response.status}`);
+  }
+  return (await response.json()) as ReceivedOrderDetail;
+}
