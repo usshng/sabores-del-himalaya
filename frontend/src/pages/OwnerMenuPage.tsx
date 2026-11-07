@@ -58,13 +58,20 @@ export default function OwnerMenuPage() {
           Cerrar sesión
         </button>
       </div>
-
-      <a
-        href="/owner/products/new"
-        className="mb-6 inline-block rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground"
-      >
-        Añadir producto
-      </a>
+      <div className="mb-6 flex gap-4">
+        <a
+          href="/owner/products/new"
+          className="inline-block rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground"
+        >
+          Añadir producto
+        </a>
+        <a
+          href="/owner/billing"
+          className="inline-block rounded-md border px-3 py-2 font-medium"
+        >
+          Facturación
+        </a>
+      </div>
 
       {error && (
         <p className="mb-4 text-sm text-destructive">

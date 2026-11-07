@@ -9,6 +9,7 @@ import ProductFormPage from "@/pages/ProductFormPage";
 import OrderPage from "@/pages/OrderPage";
 import StaffOrdersPage from "@/pages/StaffOrdersPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
+import BillingPage from "@/pages/BillingPage";
 
 // Minimal routing by URL until the team adds a router.
 const PAGES: Record<string, ComponentType> = {
@@ -22,6 +23,7 @@ const PAGES: Record<string, ComponentType> = {
   "/staff/orders": StaffOrdersPage,
   "/my-orders": MyOrdersPage,
   "/owner/products/edit": ProductFormPage,
+  "/owner/billing": BillingPage,
 };
 
 export default function App() {
