@@ -6,7 +6,6 @@ import MenuPage from "@/pages/MenuPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
 import OrderPage from "@/pages/OrderPage";
 import OwnerMenuPage from "@/pages/OwnerMenuPage";
-import ProductFormPage from "@/pages/ProductFormPage";
 import RegisterPage from "@/pages/RegisterPage";
 import StaffHomePage from "@/pages/StaffHomePage";
 import StaffOrdersPage from "@/pages/StaffOrdersPage";
@@ -25,10 +24,17 @@ const PAGES: Record<string, ComponentType> = {
   "/staff": StaffHomePage,
   "/staff/orders": StaffOrdersPage,
   "/owner/menu": OwnerMenuPage,
-  "/owner/products/new": ProductFormPage,
-  "/owner/products/edit": ProductFormPage,
+  // The product form is a dialog over the menu management (P9 over P8).
+  "/owner/products/new": OwnerMenuPage,
+  "/owner/products/edit": OwnerMenuPage,
   "/owner/billing": BillingPage,
 };
+
+// Pages that open dialogs keep one key for all their addresses, so opening a dialog does not reset them.
+const SHARED_KEYS = new Map<ComponentType, string>([
+  [MenuPage, "menu"],
+  [OwnerMenuPage, "owner-menu"],
+]);
 
 function currentLocation(): string {
   return window.location.pathname + window.location.search;
@@ -83,7 +89,6 @@ export default function App() {
 
   const pathname = location.split("?")[0];
   const Page = PAGES[pathname] ?? WelcomePage;
-  // Each address gets a fresh page, except the menu and its login dialog, which are the same screen.
-  const pageKey = Page === MenuPage ? "menu" : location;
+  const pageKey = SHARED_KEYS.get(Page) ?? location;
   return <Page key={pageKey} />;
 }

@@ -9,6 +9,7 @@ import {
   type Product,
   type ProductCategory,
 } from "@/api/productApi";
+import ProductDialog from "@/components/ProductDialog";
 import StaffHeader from "@/components/StaffHeader";
 import { navigate } from "@/lib/navigation";
 
@@ -17,15 +18,36 @@ const OWNER_LINKS = [
   { href: "/owner/billing", label: "Facturación" },
 ];
 
+const MENU_PATH = "/owner/menu";
+const NEW_PATH = "/owner/products/new";
+const EDIT_PATH = "/owner/products/edit";
+
+// Which dialog is open: none, a new product, or a product being modified.
+type DialogState = null | { productId: number | null };
+
+// The address decides the dialog, so /owner/products/new and /edit?id=… still open it directly.
+function dialogFromLocation(): DialogState {
+  if (window.location.pathname === NEW_PATH) {
+    return { productId: null };
+  }
+  if (window.location.pathname === EDIT_PATH) {
+    const id = new URLSearchParams(window.location.search).get("id");
+    return id ? { productId: Number(id) } : null;
+  }
+  return null;
+}
+
 const priceFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",
   currency: "EUR",
 });
 
 // P8: menu management for the owner, one category per tab: add (US-02), modify (US-03) and withdraw (US-04).
+// The product form (P9) opens as a dialog over it, without reloading.
 export default function OwnerMenuPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [category, setCategory] = useState<ProductCategory>("STARTERS");
+  const [dialog, setDialog] = useState<DialogState>(dialogFromLocation);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -37,6 +59,36 @@ export default function OwnerMenuPage() {
       getMenu().then(setProducts);
     });
   }, []);
+
+  // The browser's back button closes or reopens the dialog, following the address.
+  useEffect(() => {
+    function handlePopState() {
+      setDialog(dialogFromLocation());
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function openNew() {
+    window.history.pushState(null, "", NEW_PATH);
+    setDialog({ productId: null });
+  }
+
+  function openEdit(productId: number) {
+    window.history.pushState(null, "", `${EDIT_PATH}?id=${productId}`);
+    setDialog({ productId });
+  }
+
+  function closeDialog() {
+    window.history.replaceState(null, "", MENU_PATH);
+    setDialog(null);
+  }
+
+  function handleSaved(saved: Product) {
+    getMenu().then(setProducts);
+    setCategory(saved.category);
+    closeDialog();
+  }
 
   function handleWithdraw(product: Product) {
     if (!window.confirm(`¿Retirar "${product.name}" de la carta?`)) {
@@ -85,13 +137,13 @@ export default function OwnerMenuPage() {
             </button>
           );
         })}
-        <a
-          href="/owner/products/new"
+        <button
+          onClick={openNew}
           className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full bg-black px-4 py-2 font-medium text-white transition hover:bg-neutral-800"
         >
           <Plus className="size-4" />
           Añadir producto
-        </a>
+        </button>
       </nav>
 
       <main className="mx-auto w-full max-w-5xl flex-1 p-6">
@@ -106,12 +158,12 @@ export default function OwnerMenuPage() {
             <p className="mb-4 text-neutral-600">
               No hay productos en {CATEGORY_LABEL[category].toLowerCase()}.
             </p>
-            <a
-              href="/owner/products/new"
+            <button
+              onClick={openNew}
               className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800"
             >
               Añadir producto
-            </a>
+            </button>
           </div>
         ) : (
           <ul key={category} className="grid gap-3">
@@ -132,13 +184,13 @@ export default function OwnerMenuPage() {
                   {priceFormatter.format(product.price)}
                 </span>
                 <div className="flex gap-2">
-                  <a
-                    href={`/owner/products/edit?id=${product.id}`}
+                  <button
+                    onClick={() => openEdit(product.id)}
                     className="inline-flex items-center gap-1.5 rounded-md bg-neutral-100 px-3 py-1.5 text-sm font-medium hover:bg-neutral-200"
                   >
                     <Pencil className="size-3.5" />
                     Modificar
-                  </a>
+                  </button>
                   <button
                     onClick={() => handleWithdraw(product)}
                     className="inline-flex items-center gap-1.5 rounded-md bg-neutral-100 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
@@ -152,6 +204,16 @@ export default function OwnerMenuPage() {
           </ul>
         )}
       </main>
+
+      {dialog && (
+        <ProductDialog
+          key={dialog.productId ?? "new"}
+          productId={dialog.productId}
+          defaultCategory={category}
+          onClose={closeDialog}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
   );
 }
