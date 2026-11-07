@@ -1,7 +1,6 @@
 import type { ComponentType } from "react";
 import ActivatePage from "@/pages/ActivatePage";
 import BillingPage from "@/pages/BillingPage";
-import LoginPage from "@/pages/LoginPage";
 import MenuPage from "@/pages/MenuPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
 import OrderPage from "@/pages/OrderPage";
@@ -16,9 +15,10 @@ import WelcomePage from "@/pages/WelcomePage";
 const PAGES: Record<string, ComponentType> = {
   "/": WelcomePage,
   "/carta": MenuPage,
+  // Login is a dialog over the menu (P5 over P1).
+  "/login": MenuPage,
   "/register": RegisterPage,
   "/activate": ActivatePage,
-  "/login": LoginPage,
   "/order": OrderPage,
   "/my-orders": MyOrdersPage,
   "/staff": StaffHomePage,

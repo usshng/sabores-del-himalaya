@@ -9,12 +9,16 @@ import {
   type ProductCategory,
 } from "@/api/productApi";
 import AddToOrder from "@/components/AddToOrder";
+import LoginDialog from "@/components/LoginDialog";
 import SiteHeader from "@/components/SiteHeader";
 
 type MenuState =
   | { kind: "loading" }
   | { kind: "loaded"; products: Product[] }
   | { kind: "error" };
+
+const LOGIN_PATH = "/login";
+const MENU_PATH = "/carta";
 
 const priceFormatter = new Intl.NumberFormat("es-ES", {
   style: "currency",
@@ -26,11 +30,16 @@ function countUnits(order: CurrentOrder | null): number {
 }
 
 // P1 / P1b: the menu, one category per tab (US-01), with quantity and "Añadir" (US-11).
+// The login dialog (P5) opens over it without reloading; at /login it starts open.
 export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [order, setOrder] = useState<CurrentOrder | null>(null);
   const [category, setCategory] = useState<ProductCategory>("STARTERS");
+  const [showLogin, setShowLogin] = useState(
+    () => window.location.pathname === LOGIN_PATH,
+  );
+
   const isCustomer = user?.role === "CUSTOMER";
   const isStaff = user !== null && !isCustomer;
 
@@ -49,6 +58,31 @@ export default function MenuPage() {
       .catch(() => setState({ kind: "error" }));
   }, []);
 
+  // The browser's back button closes or reopens the dialog, following the address.
+  useEffect(() => {
+    function handlePopState() {
+      setShowLogin(window.location.pathname === LOGIN_PATH);
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function openLogin() {
+    window.history.pushState(null, "", LOGIN_PATH);
+    setShowLogin(true);
+  }
+
+  function closeLogin() {
+    window.history.replaceState(null, "", MENU_PATH);
+    setShowLogin(false);
+  }
+
+  function handleCustomerLoggedIn(loggedIn: AuthenticatedUser) {
+    setUser(loggedIn);
+    getCurrentOrder().then(setOrder);
+    closeLogin();
+  }
+
   const products =
     state.kind === "loaded"
       ? state.products.filter((product) => product.category === category)
@@ -56,7 +90,11 @@ export default function MenuPage() {
 
   return (
     <div className="flex min-h-svh flex-col bg-neutral-200">
-      <SiteHeader user={user} orderUnits={countUnits(order)} />
+      <SiteHeader
+        user={user}
+        orderUnits={countUnits(order)}
+        onLogin={openLogin}
+      />
 
       <nav className="flex items-center gap-6 overflow-x-auto border-b bg-white px-6 py-4 text-sm">
         {CATEGORY_ORDER.map((option) => (
@@ -117,6 +155,7 @@ export default function MenuPage() {
                     productId={product.id}
                     canOrder={isCustomer}
                     onAdded={setOrder}
+                    onLoginRequired={openLogin}
                   />
                 )}
               </div>
@@ -124,6 +163,13 @@ export default function MenuPage() {
           ))}
         </div>
       </main>
+
+      {showLogin && (
+        <LoginDialog
+          onClose={closeLogin}
+          onCustomerLoggedIn={handleCustomerLoggedIn}
+        />
+      )}
     </div>
   );
 }

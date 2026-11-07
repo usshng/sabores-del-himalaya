@@ -6,21 +6,23 @@ interface AddToOrderProps {
   productId: number;
   canOrder: boolean;
   onAdded: (order: CurrentOrder) => void;
+  // Called when a visitor without a session tries to add: only registered customers can order (US-10).
+  onLoginRequired: () => void;
 }
 
 // Quantity selector (− 1 +) and "Añadir" button of each product (US-11).
-// Visitors without a session are sent to log in: only registered customers can order (US-10).
 export default function AddToOrder({
   productId,
   canOrder,
   onAdded,
+  onLoginRequired,
 }: AddToOrderProps) {
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState(false);
 
   function handleAdd() {
     if (!canOrder) {
-      window.location.href = "/login";
+      onLoginRequired();
       return;
     }
     setError(false);

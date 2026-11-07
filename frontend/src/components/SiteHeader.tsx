@@ -4,6 +4,8 @@ interface SiteHeaderProps {
   user: AuthenticatedUser | null;
   orderUnits?: number;
   backHref?: string;
+  // When given, "Iniciar sesión" opens the login dialog on the same page instead of navigating.
+  onLogin?: () => void;
 }
 
 // Black header of the customer screens, as in the screen flow (ESQ): back link, name and session links.
@@ -11,6 +13,7 @@ export default function SiteHeader({
   user,
   orderUnits,
   backHref = "/",
+  onLogin,
 }: SiteHeaderProps) {
   const isCustomer = user?.role === "CUSTOMER";
 
@@ -39,6 +42,10 @@ export default function SiteHeader({
             className="hover:underline"
           >
             Cerrar sesión
+          </button>
+        ) : onLogin ? (
+          <button onClick={onLogin} className="hover:underline">
+            Iniciar sesión
           </button>
         ) : (
           <a href="/login" className="hover:underline">
