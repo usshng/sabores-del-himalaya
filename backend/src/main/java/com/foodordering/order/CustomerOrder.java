@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.Set;
 
 @Entity
 public class CustomerOrder {
+
+    // The customer can cancel an order for free during the first 10 minutes after placing it (US-16).
+    public static final Duration CANCELLATION_PERIOD = Duration.ofMinutes(10);
 
     private static final Set<OrderStatus> STAFF_STATUSES =
             Set.of(OrderStatus.IN_PREPARATION, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED);
@@ -78,6 +82,17 @@ public class CustomerOrder {
             throw new InvalidStatusChangeException();
         }
         this.status = newStatus;
+    }
+
+    // The order is kept with status Cancelled instead of being deleted (US-16).
+    public void cancel(LocalDateTime now) {
+        if (status == OrderStatus.CANCELLED) {
+            throw new CancelledOrderException();
+        }
+        if (now.isAfter(placedAt.plus(CANCELLATION_PERIOD))) {
+            throw new CancellationPeriodExpiredException();
+        }
+        this.status = OrderStatus.CANCELLED;
     }
 
     public Long getId() {

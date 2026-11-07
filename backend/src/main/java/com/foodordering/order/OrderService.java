@@ -76,10 +76,6 @@ public class OrderService {
         return PlacedOrderDto.from(order);
     }
 
-    private Customer findCustomer(String login) {
-        return customerRepository.findByLogin(login).orElseThrow();
-    }
-
     /**
      * Returns the orders the customer has placed, from the newest to the oldest, with their current status.
      *
@@ -93,5 +89,29 @@ public class OrderService {
                 .stream()
                 .map(MyOrderDto::from)
                 .toList();
+    }
+
+    /**
+     * Cancels one of the customer's placed orders, free of charge, within 10 minutes of placing it.
+     *
+     * @param login the login of the logged-in customer
+     * @param orderId the order the customer wants to cancel
+     * @return the order with status Cancelled
+     * @throws OrderNotFoundException if the customer has no placed order with that id
+     * @throws CancellationPeriodExpiredException if more than 10 minutes have passed since it was placed
+     * @throws CancelledOrderException if the order was already cancelled
+     */
+    @Transactional
+    public MyOrderDto cancel(String login, Long orderId) {
+        Customer customer = findCustomer(login);
+        CustomerOrder order = orderRepository
+                .findByIdAndCustomerAndStatusNot(orderId, customer, OrderStatus.IN_PROGRESS)
+                .orElseThrow(OrderNotFoundException::new);
+        order.cancel(LocalDateTime.now(clock));
+        return MyOrderDto.from(order);
+    }
+
+    private Customer findCustomer(String login) {
+        return customerRepository.findByLogin(login).orElseThrow();
     }
 }
