@@ -21,7 +21,6 @@ const longDate = new Intl.DateTimeFormat("es-ES", {
   year: "numeric",
 });
 
-// "en-CA" formats dates as YYYY-MM-DD in local time, the format the date input and the API use.
 function isoDate(date: Date): string {
   return new Intl.DateTimeFormat("en-CA").format(date);
 }
@@ -30,12 +29,10 @@ function today(): string {
   return isoDate(new Date());
 }
 
-// Reads YYYY-MM-DD as a local date, so the day shown is never shifted by the time zone.
 function formatDay(day: string): string {
   return longDate.format(new Date(`${day}T00:00:00`));
 }
 
-// P10: daily billing for the owner (US-20). Today's billing is shown on arrival.
 export default function BillingPage() {
   const [date, setDate] = useState(today);
   const [billing, setBilling] = useState<DailyBilling | null>(null);
@@ -122,9 +119,9 @@ export default function BillingPage() {
                     <span className="first-letter:uppercase">
                       {formatDay(billing.date)}
                     </span>{" "}
-                    · {billing.orderCount}{" "}
-                    {billing.orderCount === 1 ? "pedido" : "pedidos"}, sin
-                    contar los cancelados
+                    - {billing.orderCount}{" "}
+                    {billing.orderCount === 1 ? "pedido confirmado" : "pedidos confirmados"}, sin
+                    cancelación
                   </p>
                 )}
               </>
