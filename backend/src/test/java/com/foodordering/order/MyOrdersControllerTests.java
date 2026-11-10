@@ -49,7 +49,6 @@ class MyOrdersControllerTests {
     @Autowired
     private ProductRepository productRepository;
 
-    // Replaces the system clock, so the 10-minute cancellation period can be tested without waiting.
     @MockitoBean
     private Clock clock;
 
@@ -66,7 +65,6 @@ class MyOrdersControllerTests {
                 ProductCategory.STARTERS));
     }
 
-    // Orders reference customers and products, so they are removed first to keep other test classes clean.
     @AfterEach
     void clearData() {
         orderRepository.deleteAll();
@@ -156,7 +154,6 @@ class MyOrdersControllerTests {
                 .andExpect(status().isConflict());
     }
 
-    // Pending rule of US-19: a cancelled order cannot change status.
     @Test
     @WithMockUser(roles = "STAFF")
     void staffCannotChangeStatusOfCancelledOrder() throws Exception {

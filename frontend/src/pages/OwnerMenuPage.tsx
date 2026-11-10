@@ -22,10 +22,8 @@ const MENU_PATH = "/owner/menu";
 const NEW_PATH = "/owner/products/new";
 const EDIT_PATH = "/owner/products/edit";
 
-// Which dialog is open: none, a new product, or a product being modified.
 type DialogState = null | { productId: number | null };
 
-// The address decides the dialog, so /owner/products/new and /edit?id=… still open it directly.
 function dialogFromLocation(): DialogState {
   if (window.location.pathname === NEW_PATH) {
     return { productId: null };
@@ -42,8 +40,6 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
   currency: "EUR",
 });
 
-// P8: menu management for the owner, one category per tab: add (US-02), modify (US-03) and withdraw (US-04).
-// The product form (P9) opens as a dialog over it, without reloading.
 export default function OwnerMenuPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [category, setCategory] = useState<ProductCategory>("STARTERS");
@@ -60,7 +56,6 @@ export default function OwnerMenuPage() {
     });
   }, []);
 
-  // The browser's back button closes or reopens the dialog, following the address.
   useEffect(() => {
     function handlePopState() {
       setDialog(dialogFromLocation());

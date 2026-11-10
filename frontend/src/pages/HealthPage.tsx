@@ -37,7 +37,6 @@ function toDisplayStatuses(state: HealthState): {
     case "loaded":
       return state.health;
     case "error":
-      // Without an answer from the backend there is no way to know whether the database is up.
       return { backend: "DOWN", database: "UNKNOWN" };
   }
 }

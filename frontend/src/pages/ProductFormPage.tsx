@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const OWNER_MENU_URL = "/owner/menu";
 
-// P9: form to add a product (US-02) or, with ?id=…, to modify an existing one (US-03).
 export default function ProductFormPage() {
   const idParam = new URLSearchParams(window.location.search).get("id");
   const productId = idParam ? Number(idParam) : null;

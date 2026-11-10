@@ -26,7 +26,6 @@ const DIALOG_PATH: Record<Exclude<Dialog, null>, string> = {
   register: "/register",
 };
 
-// The address decides the dialog, so /login and /register still open it directly.
 function dialogFromLocation(): Dialog {
   if (window.location.pathname === DIALOG_PATH.login) {
     return "login";
@@ -46,8 +45,6 @@ function countUnits(order: CurrentOrder | null): number {
   return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 }
 
-// P1 / P1b: the menu, one category per tab (US-01), with quantity and "Añadir" (US-11).
-// Login (P5) and registration (P3) open as dialogs over it, without reloading.
 export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
@@ -73,7 +70,6 @@ export default function MenuPage() {
       .catch(() => setState({ kind: "error" }));
   }, []);
 
-  // The browser's back button closes or reopens the dialogs, following the address.
   useEffect(() => {
     function handlePopState() {
       setDialog(dialogFromLocation());
@@ -87,7 +83,6 @@ export default function MenuPage() {
     setDialog(next);
   }
 
-  // Switching between login and registration replaces the address, so "back" closes the dialog.
   function switchDialog(next: Exclude<Dialog, null>) {
     window.history.replaceState(null, "", DIALOG_PATH[next]);
     setDialog(next);

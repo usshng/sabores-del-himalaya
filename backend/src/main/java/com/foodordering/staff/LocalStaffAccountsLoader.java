@@ -5,7 +5,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-// Creates one account per staff role in the local environment, so login can be tried without external data.
+// to create one account for each role of the personal (dueno --> rol: owner, chef --> rol: chef,
+// personal --> rol:staff)
 @Component
 @Profile("local")
 public class LocalStaffAccountsLoader implements CommandLineRunner {

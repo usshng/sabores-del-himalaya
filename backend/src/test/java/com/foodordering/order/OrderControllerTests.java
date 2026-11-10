@@ -53,7 +53,6 @@ class OrderControllerTests {
                 ProductCategory.STARTERS));
     }
 
-    // Orders reference customers and products, so they are removed first to keep other test classes clean.
     @AfterEach
     void clearData() {
         orderRepository.deleteAll();

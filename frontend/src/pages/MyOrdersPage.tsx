@@ -38,8 +38,6 @@ function countUnits(order: CurrentOrder | null): number {
   return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 }
 
-// P7: the customer's orders with their status, newest first (US-17), and free cancellation in time (US-16).
-// "Modificar" (US-15) arrives in Sprint 2.
 export default function MyOrdersPage() {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [orders, setOrders] = useState<MyOrder[] | null>(null);

@@ -32,7 +32,6 @@ export async function login(
   throw new Error(error);
 }
 
-// Returns the logged-in user, or null when there is no session.
 export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   const response = await fetch(`${AUTH_URL}/me`);
   if (!response.ok) {

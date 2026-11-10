@@ -41,7 +41,6 @@ class CustomerControllerTests {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Replaces the real mail sender, so the tests do not need Mailpit running.
     @MockitoBean
     private JavaMailSender mailSender;
 

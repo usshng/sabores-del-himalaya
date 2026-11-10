@@ -76,7 +76,6 @@ export async function getMyOrders(): Promise<MyOrder[]> {
   return (await response.json()) as MyOrder[];
 }
 
-// The customer can cancel an order during the first 10 minutes after placing it (US-16).
 export const CANCELLATION_PERIOD_MS = 10 * 60 * 1000;
 
 export async function cancelOrder(id: number): Promise<MyOrder> {

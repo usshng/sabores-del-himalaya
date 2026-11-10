@@ -12,7 +12,7 @@ type ActivationState = "activating" | "activated" | "invalid";
 
 export default function ActivatePage() {
   const token = new URLSearchParams(window.location.search).get("token");
-  // Without a token there is nothing to activate, so the page starts as invalid.
+
   const [state, setState] = useState<ActivationState>(
     token ? "activating" : "invalid",
   );

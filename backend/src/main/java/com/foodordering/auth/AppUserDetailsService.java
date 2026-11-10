@@ -22,11 +22,11 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     /**
-     * Finds the user with the given login among customers and restaurant staff.
+     * Finds the user with the username.
      *
      * @param login the login typed in the login form
-     * @return the user with its role; customers whose account is not activated yet are returned disabled
-     * @throws UsernameNotFoundException if nobody has that login
+     * @return the user with its role. For the customers whose account is not activated yet, they are returned disabled
+     * @throws UsernameNotFoundException if no user has that username
      */
     @Override
     @Transactional(readOnly = true)

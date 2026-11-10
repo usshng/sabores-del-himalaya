@@ -16,7 +16,6 @@ public class HealthController {
         this.healthService = healthService;
     }
 
-    // 503 instead of 200 when the database is down, so clients can detect the outage from the status code alone.
     @GetMapping
     public ResponseEntity<HealthDto> getHealth() {
         HealthDto health = healthService.checkHealth();

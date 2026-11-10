@@ -14,9 +14,9 @@ public class StaffOrderService {
     }
 
     /**
-     * Returns the orders confirmed by customers, from the oldest to the newest, so they are prepared in order.
+     * Returns the orders confirmed, it is ordered from the oldest to the newest.
      *
-     * @return the confirmed orders with the customer's name and address, date and time, and status
+     * @return the confirmed orders and the details
      */
     @Transactional(readOnly = true)
     public List<ReceivedOrderDto> getReceivedOrders() {
@@ -26,11 +26,11 @@ public class StaffOrderService {
     }
 
     /**
-     * Returns the content and total amount of a confirmed order.
+     * Returns the content of the order and the total amount.
      *
-     * @param id the order selected in the list
-     * @return the order with its products, quantities and total amount
-     * @throws OrderNotFoundException if there is no confirmed order with that id
+     * @param id the id of the order
+     * @return the order with the products, quantity, and total amount of the order
+     * @throws OrderNotFoundException no confirmed order with that id
      */
     @Transactional(readOnly = true)
     public ReceivedOrderDetailDto getReceivedOrder(Long id) {
@@ -40,14 +40,14 @@ public class StaffOrderService {
     }
 
     /**
-     * Changes the status of a confirmed order, so the customer can follow it.
+     * Changes the status of the order, so the customer can see it.
      *
-     * @param id the order selected in the list
-     * @param request the new status chosen by the staff
-     * @return the order with its new status
-     * @throws OrderNotFoundException if there is no confirmed order with that id
-     * @throws InvalidStatusChangeException if the new status is not one the staff can set
-     * @throws CancelledOrderException if the order was cancelled by the customer
+     * @param id of the order
+     * @param request the new status
+     * @return the order with the status updated
+     * @throws OrderNotFoundException in case that there is not order with that id
+     * @throws InvalidStatusChangeException any status that staff can't put to the order
+     * @throws CancelledOrderException if the order is cancelled while staff is changing the status
      */
     @Transactional
     public ReceivedOrderDetailDto updateStatus(Long id, UpdateOrderStatusRequest request) {

@@ -1,4 +1,4 @@
-// Changes the page without reloading it: App listens to "popstate" and shows the page of the new address.
+// This is for navegate between pages without reloading
 export function navigate(to: string) {
   if (to === window.location.pathname + window.location.search) {
     return;

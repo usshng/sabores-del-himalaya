@@ -37,7 +37,6 @@ public class AuthController {
             HttpServletResponse httpResponse) {
         Authentication authentication = authenticationManager.authenticate(
                 UsernamePasswordAuthenticationToken.unauthenticated(request.login(), request.password()));
-        // Stores the authenticated user in the session, so later requests with the session cookie are logged in.
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
@@ -53,12 +52,12 @@ public class AuthController {
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public void handleBadCredentials() {
-        // Wrong login or password: same answer in both cases, so logins cannot be guessed.
+       // when username or password is wrong.
     }
 
     @ExceptionHandler(DisabledException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public void handleNotActivated() {
-        // The customer registered but has not followed the activation link yet (US-09).
+        // the customer didn't activate the account yet.
     }
 }

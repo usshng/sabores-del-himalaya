@@ -24,8 +24,6 @@ function countUnits(order: CurrentOrder | null): number {
   return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 }
 
-// P6: the customer reviews the order in progress with its total (US-11, US-13) and confirms it (US-14).
-// Changing quantities or removing items before confirming is pending a requirements decision.
 export default function OrderPage() {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [order, setOrder] = useState<CurrentOrder | null>(null);

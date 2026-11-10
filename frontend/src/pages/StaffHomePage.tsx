@@ -8,7 +8,6 @@ const ROLE_LABEL: Record<string, string> = {
   STAFF: "personal del restaurante",
 };
 
-// Temporary landing page for staff until their screens exist (P8 owner, P11 chef, P13 staff).
 export default function StaffHomePage() {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
 

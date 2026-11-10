@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-// Staff accounts are managed by the restaurant outside the application (EIF): the system only reads them.
 @Entity
 public class StaffAccount {
 
@@ -27,7 +26,7 @@ public class StaffAccount {
     private StaffRole role;
 
     protected StaffAccount() {
-        // Required by JPA
+
     }
 
     public StaffAccount(String login, String passwordHash, StaffRole role) {

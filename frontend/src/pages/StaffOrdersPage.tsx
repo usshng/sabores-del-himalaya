@@ -19,7 +19,6 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   CANCELLED: "Cancelado",
 };
 
-// Each status has its own shade, so the staff see at a glance which orders need attention.
 const STATUS_STYLE: Record<OrderStatus, string> = {
   RECEIVED: "bg-black text-white",
   IN_PREPARATION: "bg-neutral-600 text-white",
@@ -28,7 +27,6 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   CANCELLED: "bg-neutral-100 text-neutral-400 line-through",
 };
 
-// Statuses the staff can set (US-19); only the customer can cancel (US-16).
 const STAFF_STATUSES: OrderStatus[] = [
   "IN_PREPARATION",
   "OUT_FOR_DELIVERY",
@@ -55,7 +53,6 @@ const fullDateTime = new Intl.DateTimeFormat("es-ES", {
   minute: "2-digit",
 });
 
-// Suggests the next status in the kitchen flow, so updating is usually one click.
 function suggestedStatus(current: OrderStatus): OrderStatus {
   if (current === "IN_PREPARATION") {
     return "OUT_FOR_DELIVERY";
@@ -76,7 +73,6 @@ function StatusBadge({ status }: { status: OrderStatus }) {
   );
 }
 
-// P13: orders received by the restaurant (US-18) and their status changes (US-19).
 export default function StaffOrdersPage() {
   const [orders, setOrders] = useState<ReceivedOrder[] | null>(null);
   const [selected, setSelected] = useState<ReceivedOrderDetail | null>(null);

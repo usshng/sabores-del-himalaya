@@ -19,10 +19,10 @@ public class BillingService {
     }
 
     /**
-     * Adds up the total amount of the orders placed on a day, without counting cancelled ones.
+     * Adds the total amount of orders placed on a day, it doesn't count the cancelled orders for the amount.
      *
      * @param date the day chosen by the owner
-     * @return the number of orders counted and the total billed that day
+     * @return the total sum of orders and the total amount of money of that day
      */
     @Transactional(readOnly = true)
     public DailyBillingDto getDailyBilling(LocalDate date) {

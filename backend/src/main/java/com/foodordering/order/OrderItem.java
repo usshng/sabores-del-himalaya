@@ -19,7 +19,6 @@ public class OrderItem {
     @ManyToOne(optional = false)
     private Product product;
 
-    // Price at the moment the product was added, so later menu changes do not alter existing orders.
     @Column(nullable = false, precision = 8, scale = 2)
     private BigDecimal unitPrice;
 
@@ -27,7 +26,7 @@ public class OrderItem {
     private int quantity;
 
     protected OrderItem() {
-        // Required by JPA
+
     }
 
     OrderItem(Product product, int quantity) {
