@@ -4,6 +4,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// This is the business logic of the menu. So the controller only recieves
+// the requests and calls these methods, so the rules of each user story is from here and not
+// in the controller
 @Service
 public class ProductService {
 
@@ -14,9 +17,10 @@ public class ProductService {
     }
 
     /**
-     * Returns the products currently on the menu, ordered by category and name.
+     * Returns the menu that visitors and clients see. Ordered by category and name (US-01)
+     * The query is read only, so we don't change any data.
      *
-     * @return the available products; withdrawn products are not included
+     * @return the products on the menu, ready to be sent by the API.
      */
     @Transactional(readOnly = true)
     public List<ProductDto> getMenu() {
@@ -26,10 +30,10 @@ public class ProductService {
     }
 
     /**
-     * Adds a new product to the menu.
+     * Add new product to the menu for US-02.
      *
-     * @param request the data entered in the product form
-     * @return the created product, already visible on the menu
+     * @param request the data introduced in the form
+     * @return the new product, visible on the menu
      */
     @Transactional
     public ProductDto create(CreateProductRequest request) {
@@ -38,11 +42,11 @@ public class ProductService {
     }
 
     /**
-     * Returns the current data of a product, so the owner can see it before modifying it.
+     * Returns the data of a product, so the owner can check it before the modification (US-03).
      *
-     * @param id the product selected by the owner
-     * @return the product's name, description, price and category
-     * @throws ProductNotFoundException if the product does not exist
+     * @param id of the product selected
+     * @return the product details: name, description, price and category
+     * @throws ProductNotFoundException in the case the product does not exist.
      */
     @Transactional(readOnly = true)
     public ProductDto getProduct(Long id) {
@@ -52,11 +56,12 @@ public class ProductService {
     }
 
     /**
-     * Modifies a product; the changes are shown on the menu, while orders already placed keep their prices.
+     * Modifying a product (US-03). The changes introduced are shown on the menu,
+     * those orders done before these changes keeps their original prices before modification.
      *
-     * @param id the product selected by the owner
-     * @param request the new data entered in the product form
-     * @return the product with its new data
+     * @param id the product selected
+     * @param request the new data
+     * @return the product with the data changed
      * @throws ProductNotFoundException if the product does not exist
      */
     @Transactional
@@ -67,9 +72,9 @@ public class ProductService {
     }
 
     /**
-     * Withdraws a product from the menu; it stays stored so it can still be used in daily menus.
+     * Withdraw of a product of the menu.
      *
-     * @param id the product selected by the owner
+     * @param id the product selected
      * @throws ProductNotFoundException if the product does not exist
      */
     @Transactional
