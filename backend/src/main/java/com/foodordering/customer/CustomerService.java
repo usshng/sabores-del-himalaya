@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Business logic of the customer account.
 @Service
 public class CustomerService {
 
@@ -25,10 +26,10 @@ public class CustomerService {
     }
 
     /**
-     * Registers a new customer whose account stays pending until it is activated, and emails the activation link.
+     * Register a new user, the account is not activated until pressed the activation link.
      *
-     * @param request the data entered in the registration form
-     * @throws DuplicateCustomerException if the login or the email is already registered
+     * @param request the data placed in the form
+     * @throws DuplicateCustomerException if the username is already registered or the mail is already registered
      */
     @Transactional
     public void register(RegisterCustomerRequest request) {
@@ -46,10 +47,10 @@ public class CustomerService {
     }
 
     /**
-     * Activates the account linked to the activation token sent by email.
+     * Activates the account.
      *
      * @param token the token included in the activation link
-     * @throws InvalidActivationTokenException if no pending account has that token
+     * @throws InvalidActivationTokenException if the token is not associated with any account
      */
     @Transactional
     public void activate(String token) {
@@ -58,6 +59,12 @@ public class CustomerService {
         customer.activate();
     }
 
+    /**
+     * Activation mail.
+     *
+     * @param email the email
+     * @param token the token
+     */
     private void sendActivationEmail(String email, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);

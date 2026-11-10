@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+// REST endpoints for the customer account. Registration, activation of the account
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -19,12 +20,14 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
+    // POST /api/customers, when a visitor registers (US-08)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@Valid @RequestBody RegisterCustomerRequest request) {
         customerService.register(request);
     }
 
+    // When the customer opens the activation link
     @PostMapping("/activation")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void activate(@RequestParam String token) {

@@ -6,9 +6,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+// A customer (a person that have an account in our system)
 @Entity
 public class Customer {
 
+    // details of a customer, id, name, address to deliver, user(login),
+    // the password encrypted using BCrypt hash, email, if the account is activated,
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,22 +25,21 @@ public class Customer {
     @Column(nullable = false, unique = true)
     private String login;
 
-    // Stores the BCrypt hash, never the plain password.
     @Column(nullable = false)
     private String passwordHash;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    // The account cannot log in until the customer follows the activation link (US-09).
     @Column(nullable = false)
     private boolean active = false;
 
+    // each activation link is unique and belongs only for a user
     @Column(unique = true)
     private String activationToken;
 
     protected Customer() {
-        // Required by JPA
+
     }
 
     public Customer(String name, String address, String login, String passwordHash, String email,
@@ -50,6 +52,7 @@ public class Customer {
         this.activationToken = activationToken;
     }
 
+    // some methods
     public Long getId() {
         return id;
     }

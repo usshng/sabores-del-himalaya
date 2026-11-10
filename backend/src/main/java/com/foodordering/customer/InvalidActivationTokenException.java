@@ -3,6 +3,7 @@ package com.foodordering.customer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+// to treat tokens exceptions
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class InvalidActivationTokenException extends RuntimeException {
 
