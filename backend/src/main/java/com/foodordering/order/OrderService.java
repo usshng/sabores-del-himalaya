@@ -11,6 +11,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,9 +60,7 @@ public class OrderService {
     @Transactional
     public CurrentOrderDto addProduct(String login, AddOrderItemRequest request) {
         Customer customer = findCustomer(login);
-        Product product = productRepository.findById(request.productId())
-                .filter(Product::isOnMenu)
-                .orElseThrow(ProductNotAvailableException::new);
+        Product product = findAvailableProduct(request.productId());
         CustomerOrder order = orderRepository.findByCustomerAndStatus(customer, OrderStatus.IN_PROGRESS)
                 .orElseGet(() -> orderRepository.save(new CustomerOrder(customer)));
         order.addProduct(product, request.quantity());
@@ -78,14 +79,10 @@ public class OrderService {
     @Transactional
     public CurrentOrderDto addMenu(String login, AddOrderMenuRequest request) {
         Customer customer = findCustomer(login);
-        DailyMenu dailyMenu = dailyMenuRepository.findByMenuDate(LocalDate.now(clock))
-                .orElseThrow(DailyMenuNotFoundException::new);
-        Product starter = findOption(dailyMenu.getStarters(), request.starterId());
-        Product mainCourse = findOption(dailyMenu.getMainCourses(), request.mainCourseId());
-        Product dessert = findOption(dailyMenu.getDesserts(), request.dessertId());
+        OrderMenu menu = createMenu(request);
         CustomerOrder order = orderRepository.findByCustomerAndStatus(customer, OrderStatus.IN_PROGRESS)
                 .orElseGet(() -> orderRepository.save(new CustomerOrder(customer)));
-        order.addMenu(new OrderMenu(dailyMenu, starter, mainCourse, dessert));
+        order.addMenu(menu);
         // We flush so the new menu gets its id before we answer, the frontend uses it to list the menus.
         orderRepository.flush();
         return CurrentOrderDto.from(order);
@@ -123,6 +120,56 @@ public class OrderService {
     }
 
     /**
+     * Returns one of the customer's placed orders with its content, so the customer can modify it (US-15).
+     *
+     * @param login the login of the logged-in customer
+     * @param orderId the placed order
+     * @return the order with its products, menus, total, status and the date and time it was placed
+     * @throws OrderNotFoundException if the customer has no placed order with that id
+     */
+    @Transactional(readOnly = true)
+    public PlacedOrderDto getMyOrder(String login, Long orderId) {
+        return PlacedOrderDto.from(findPlacedOrder(login, orderId));
+    }
+
+    /**
+     * Modifies a placed order, free of charge, within 10 minutes of placing it. The customer can add or
+     * remove products and menus and change the quantities, and the total is updated (US-15).
+     *
+     * @param login the login of the logged-in customer
+     * @param orderId the order the customer wants to modify
+     * @param request the new products with their quantities, the menus kept and the new menus
+     * @return the order with its new content and total
+     * @throws OrderNotFoundException if the customer has no placed order with that id
+     * @throws ModificationPeriodExpiredException if more than 10 minutes have passed since it was placed
+     * @throws CancelledOrderException if the order was cancelled
+     * @throws ProductNotAvailableException if a new product is not in the menu
+     * @throws EmptyOrderException if the order would be empty, then the customer has to cancel it
+     */
+    @Transactional
+    public PlacedOrderDto modify(String login, Long orderId, ModifyOrderRequest request) {
+        CustomerOrder order = findPlacedOrder(login, orderId);
+        order.checkCanBeModified(LocalDateTime.now(clock));
+        Map<Long, Integer> quantities = request.items().stream()
+                .collect(Collectors.toMap(OrderLineRequest::productId, OrderLineRequest::quantity,
+                        (first, second) -> second));
+        order.keepProducts(quantities);
+        // The products that were not in the order are new, so they have to be available in the menu.
+        quantities.forEach((productId, quantity) -> {
+            if (!order.hasProduct(productId)) {
+                order.addProduct(findAvailableProduct(productId), quantity);
+            }
+        });
+        order.keepMenus(Set.copyOf(request.keptMenuIds()));
+        request.newMenus().forEach(menu -> order.addMenu(createMenu(menu)));
+        if (order.isEmpty()) {
+            throw new EmptyOrderException();
+        }
+        orderRepository.flush();
+        return PlacedOrderDto.from(order);
+    }
+
+    /**
      * Cancels one of the customer's placed orders, free of charge, within 10 minutes of placing it.
      *
      * @param login the login of the logged-in customer
@@ -134,16 +181,35 @@ public class OrderService {
      */
     @Transactional
     public MyOrderDto cancel(String login, Long orderId) {
-        Customer customer = findCustomer(login);
-        CustomerOrder order = orderRepository
-                .findByIdAndCustomerAndStatusNot(orderId, customer, OrderStatus.IN_PROGRESS)
-                .orElseThrow(OrderNotFoundException::new);
+        CustomerOrder order = findPlacedOrder(login, orderId);
         order.cancel(LocalDateTime.now(clock));
         return MyOrderDto.from(order);
     }
 
     private Customer findCustomer(String login) {
         return customerRepository.findByLogin(login).orElseThrow();
+    }
+
+    // The order in progress is not placed yet, so the customer can't see it here.
+    private CustomerOrder findPlacedOrder(String login, Long orderId) {
+        return orderRepository
+                .findByIdAndCustomerAndStatusNot(orderId, findCustomer(login), OrderStatus.IN_PROGRESS)
+                .orElseThrow(OrderNotFoundException::new);
+    }
+
+    private Product findAvailableProduct(Long productId) {
+        return productRepository.findById(productId)
+                .filter(Product::isOnMenu)
+                .orElseThrow(ProductNotAvailableException::new);
+    }
+
+    // Only today's menu can be ordered (US-12), with one option of each part.
+    private OrderMenu createMenu(AddOrderMenuRequest request) {
+        DailyMenu dailyMenu = dailyMenuRepository.findByMenuDate(LocalDate.now(clock))
+                .orElseThrow(DailyMenuNotFoundException::new);
+        return new OrderMenu(dailyMenu, findOption(dailyMenu.getStarters(), request.starterId()),
+                findOption(dailyMenu.getMainCourses(), request.mainCourseId()),
+                findOption(dailyMenu.getDesserts(), request.dessertId()));
     }
 
     // The dish has to be one of the options of its part of the menu, so a dessert can't be chosen as starter.

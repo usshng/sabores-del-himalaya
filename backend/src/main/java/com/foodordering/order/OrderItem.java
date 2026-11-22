@@ -39,6 +39,10 @@ public class OrderItem {
         this.quantity += extra;
     }
 
+    void changeQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public Product getProduct() {
         return product;
     }

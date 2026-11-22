@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -105,6 +106,37 @@ public class CustomerOrder {
             throw new CancellationPeriodExpiredException();
         }
         this.status = OrderStatus.CANCELLED;
+    }
+
+    // The customer can modify the order the first 10 minutes after confirmation (US-15), the same period
+    // as cancelling it. The period counts from placedAt, so it doesn't start again after a modification.
+    public void checkCanBeModified(LocalDateTime now) {
+        if (status == OrderStatus.CANCELLED) {
+            throw new CancelledOrderException();
+        }
+        if (now.isAfter(placedAt.plus(CANCELLATION_PERIOD))) {
+            throw new ModificationPeriodExpiredException();
+        }
+    }
+
+    // The products that are not in the new quantities are removed. The others change their quantity and
+    // keep the price they had when the order was placed (US-15).
+    public void keepProducts(Map<Long, Integer> quantities) {
+        items.removeIf(item -> !quantities.containsKey(item.getProduct().getId()));
+        items.forEach(item -> item.changeQuantity(quantities.get(item.getProduct().getId())));
+    }
+
+    public boolean hasProduct(Long productId) {
+        return items.stream().anyMatch(item -> item.getProduct().getId().equals(productId));
+    }
+
+    // The menus that the customer doesn't keep are removed from the order (US-15).
+    public void keepMenus(Set<Long> menuIds) {
+        menus.removeIf(menu -> !menuIds.contains(menu.getId()));
+    }
+
+    public boolean isEmpty() {
+        return items.isEmpty() && menus.isEmpty();
     }
 
     public Long getId() {
