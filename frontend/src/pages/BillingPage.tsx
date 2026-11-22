@@ -120,8 +120,10 @@ export default function BillingPage() {
                       {formatDay(billing.date)}
                     </span>{" "}
                     - {billing.orderCount}{" "}
-                    {billing.orderCount === 1 ? "pedido confirmado" : "pedidos confirmados"}, sin
-                    cancelación
+                    {billing.orderCount === 1
+                      ? "pedido confirmado"
+                      : "pedidos confirmados"}
+                    , sin cancelación
                   </p>
                 )}
               </>

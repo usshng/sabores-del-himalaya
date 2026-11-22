@@ -6,9 +6,9 @@ import MenuPage from "@/pages/MenuPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
 import OrderPage from "@/pages/OrderPage";
 import OwnerMenuPage from "@/pages/OwnerMenuPage";
-import StaffHomePage from "@/pages/StaffHomePage";
 import StaffOrdersPage from "@/pages/StaffOrdersPage";
 import WelcomePage from "@/pages/WelcomePage";
+import ChefPage from "@/pages/ChefPage";
 
 const PAGES: Record<string, ComponentType> = {
   "/": WelcomePage,
@@ -18,7 +18,7 @@ const PAGES: Record<string, ComponentType> = {
   "/activate": ActivatePage,
   "/order": OrderPage,
   "/my-orders": MyOrdersPage,
-  "/staff": StaffHomePage,
+  "/chef": ChefPage,
   "/staff/orders": StaffOrdersPage,
   "/owner/menu": OwnerMenuPage,
   "/owner/products/new": OwnerMenuPage,

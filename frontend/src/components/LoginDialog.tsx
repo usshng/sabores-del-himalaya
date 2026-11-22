@@ -19,7 +19,7 @@ import { navigate } from "@/lib/navigation";
 // Where staff land after logging in (US-10). Customers stay on the menu.
 const STAFF_HOME_BY_ROLE: Record<Exclude<Role, "CUSTOMER">, string> = {
   OWNER: "/owner/menu",
-  CHEF: "/staff",
+  CHEF: "/chef",
   STAFF: "/staff/orders",
 };
 
