@@ -1,7 +1,9 @@
 package com.foodordering.product;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +29,11 @@ public class MenuDishController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDto create(@Valid @RequestBody CreateMenuDishRequest request) {
         return productService.createMenuDish(request);
+    }
+
+    // GET /api/menu-dishes, the dishes the chef can choose when configuring a daily menu (US-05).
+    @GetMapping
+    public List<MenuDishOptionDto> getOptions() {
+        return productService.getMenuDishOptions();
     }
 }

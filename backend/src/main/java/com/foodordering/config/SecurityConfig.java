@@ -58,6 +58,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/billing/**").hasRole("OWNER")
                         // For the CHEF only: register dishes for daily menus (US-06).
                         .requestMatchers("/api/menu-dishes/**").hasRole("CHEF")
+                        // For the CHEF only: configure the daily menu (US-05).
+                        .requestMatchers(HttpMethod.POST, "/api/daily-menus").hasRole("CHEF")
                         // Any endpoint not covered before can only be accessed by a logged-in user.
                         .anyRequest().authenticated())
                 // If you try to access an endpoint without a session, the API returns 401.

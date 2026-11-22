@@ -96,4 +96,20 @@ public class ProductService {
         return ProductDto.from(productRepository.save(dish));
     }
 
+
+    /**
+     * Returns the dishes that the chef can use in a daily menu (US-05): products of the menu, withdrawn ones
+     * and dishes only for menus (US-06). The drink must be a drink that is on the menu, as the user story says.
+     *
+     * @return the available dishes with their name, category, use in the menu and part of the menu
+     */
+    @Transactional(readOnly = true)
+    public List<MenuDishOptionDto> getMenuDishOptions() {
+        return productRepository.findAllByOrderByNameAsc().stream()
+                .filter(product -> product.getMenuCourse() != null)
+                .filter(product -> product.getMenuCourse() != MenuCourse.DRINK || product.isOnMenu())
+                .map(MenuDishOptionDto::from)
+                .toList();
+    }
+
 }

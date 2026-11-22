@@ -119,4 +119,26 @@ public class Product {
         this.price = price;
         this.category = category;
     }
+
+    // The part of a daily menu where this product can be used (US-05), or null if it can't be used.
+    // Dishes only for daily menus go where the chef said (US-06); products of the menu go by their category:
+    // starters and salads as starters, tandoori and main courses as main courses, desserts and drinks.
+    public MenuCourse getMenuCourse() {
+        if (menuUse != null) {
+            return switch (menuUse) {
+                case STARTER -> MenuCourse.STARTER;
+                case MAIN_COURSE -> MenuCourse.MAIN_COURSE;
+                case DESSERT -> MenuCourse.DESSERT;
+            };
+        }
+        if (category == null) {
+            return null;
+        }
+        return switch (category) {
+            case STARTERS, SALADS -> MenuCourse.STARTER;
+            case TANDOORI, MAIN_COURSES -> MenuCourse.MAIN_COURSE;
+            case DESSERTS -> MenuCourse.DESSERT;
+            case DRINKS -> MenuCourse.DRINK;
+        };
+    }
 }

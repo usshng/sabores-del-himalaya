@@ -8,6 +8,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // The menu for the customers (US-01)
     List<Product> findByOnMenuTrueOrderByCategoryAscNameAsc();
+
+    // All the products, in alphabetical order, to choose the dishes of a daily menu (US-05).
+    List<Product> findAllByOrderByNameAsc();
 }
+
+
+
 
 
