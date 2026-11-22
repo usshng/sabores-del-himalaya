@@ -9,6 +9,7 @@ import {
   type ProductCategory,
 } from "@/api/productApi";
 import AddToOrder from "@/components/AddToOrder";
+import DailyMenuView from "@/components/DailyMenuView";
 import LoginDialog from "@/components/LoginDialog";
 import RegisterDialog from "@/components/RegisterDialog";
 import SiteHeader from "@/components/SiteHeader";
@@ -19,6 +20,9 @@ type MenuState =
   | { kind: "error" };
 
 type Dialog = "login" | "register" | null;
+
+// The daily menu is one more tab, next to the categories of the menu (US-07).
+type Tab = ProductCategory | "DAILY_MENU";
 
 const MENU_PATH = "/carta";
 const DIALOG_PATH: Record<Exclude<Dialog, null>, string> = {
@@ -49,7 +53,7 @@ export default function MenuPage() {
   const [state, setState] = useState<MenuState>({ kind: "loading" });
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [order, setOrder] = useState<CurrentOrder | null>(null);
-  const [category, setCategory] = useState<ProductCategory>("STARTERS");
+  const [category, setCategory] = useState<Tab>("STARTERS");
   const [dialog, setDialog] = useState<Dialog>(dialogFromLocation);
 
   const isCustomer = user?.role === "CUSTOMER";
@@ -126,65 +130,76 @@ export default function MenuPage() {
             {CATEGORY_LABEL[option]}
           </button>
         ))}
-        {/* The daily menu arrives in Sprint 2 (US-07). */}
-        <span
-          className="ml-auto shrink-0 cursor-not-allowed text-neutral-400"
-          title="Próximamente"
+        <button
+          onClick={() => setCategory("DAILY_MENU")}
+          className={`ml-auto shrink-0 border-b-2 pb-1 ${
+            category === "DAILY_MENU"
+              ? "border-black font-semibold"
+              : "border-transparent text-neutral-500 hover:text-black"
+          }`}
         >
           Menú del día →
-        </span>
+        </button>
       </nav>
 
       <main className="mx-auto w-full max-w-6xl flex-1 p-6">
-        {state.kind === "loading" && (
-          <p className="text-neutral-600">Cargando la carta…</p>
-        )}
+        {category === "DAILY_MENU" ? (
+          <DailyMenuView />
+        ) : (
+          <>
+            {state.kind === "loading" && (
+              <p className="text-neutral-600">Cargando la carta…</p>
+            )}
 
-        {state.kind === "error" && (
-          <p className="text-destructive">
-            No se ha podido cargar la carta. Inténtalo de nuevo más tarde.
-          </p>
-        )}
+            {state.kind === "error" && (
+              <p className="text-destructive">
+                No se ha podido cargar la carta. Inténtalo de nuevo más tarde.
+              </p>
+            )}
 
-        {state.kind === "loaded" && products.length === 0 && (
-          <p className="text-neutral-600">
-            No hay productos en esta categoría.
-          </p>
-        )}
+            {state.kind === "loaded" && products.length === 0 && (
+              <p className="text-neutral-600">
+                No hay productos en esta categoría.
+              </p>
+            )}
 
-        {/* The key recreates the grid on every tab change, so the cards animate in again. */}
-        <div
-          key={category}
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {products.map((product) => (
-            <article
-              key={product.id}
-              className="flex flex-col rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition duration-500 animate-in fade-in slide-in-from-bottom-4 hover:shadow-md"
+            {/* The key recreates the grid on every tab change, so the cards animate in again. */}
+            <div
+              key={category}
+              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
             >
-              <p className="mb-1.5 text-xs tracking-wide text-neutral-400">
-                {CATEGORY_LABEL[product.category]}
-              </p>
-              <h2 className="mb-1.5 text-lg font-semibold">{product.name}</h2>
-              <p className="flex-1 text-sm leading-relaxed text-neutral-600">
-                {product.description}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-neutral-200 pt-4">
-                <span className="mr-auto text-lg font-semibold">
-                  {priceFormatter.format(product.price)}
-                </span>
-                {!isStaff && (
-                  <AddToOrder
-                    productId={product.id}
-                    canOrder={isCustomer}
-                    onAdded={setOrder}
-                    onLoginRequired={() => openDialog("login")}
-                  />
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
+              {products.map((product) => (
+                <article
+                  key={product.id}
+                  className="flex flex-col rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition duration-500 animate-in fade-in slide-in-from-bottom-4 hover:shadow-md"
+                >
+                  <p className="mb-1.5 text-xs tracking-wide text-neutral-400">
+                    {CATEGORY_LABEL[product.category]}
+                  </p>
+                  <h2 className="mb-1.5 text-lg font-semibold">
+                    {product.name}
+                  </h2>
+                  <p className="flex-1 text-sm leading-relaxed text-neutral-600">
+                    {product.description}
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-neutral-200 pt-4">
+                    <span className="mr-auto text-lg font-semibold">
+                      {priceFormatter.format(product.price)}
+                    </span>
+                    {!isStaff && (
+                      <AddToOrder
+                        productId={product.id}
+                        canOrder={isCustomer}
+                        onAdded={setOrder}
+                        onLoginRequired={() => openDialog("login")}
+                      />
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
       </main>
 
       {dialog === "login" && (

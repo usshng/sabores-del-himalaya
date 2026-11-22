@@ -45,3 +45,16 @@ export async function createDailyMenu(
   }
   return (await response.json()) as DailyMenu;
 }
+
+// Today's daily menu (US-07). The API answers 404 when the chef hasn't configured it, so we return null
+// and the page shows that the menu is not available.
+export async function getTodayMenu(): Promise<DailyMenu | null> {
+  const response = await fetch("/api/daily-menus/today");
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error("UNKNOWN");
+  }
+  return (await response.json()) as DailyMenu;
+}
