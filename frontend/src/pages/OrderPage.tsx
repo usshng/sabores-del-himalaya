@@ -20,8 +20,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   timeStyle: "short",
 });
 
+// Each daily menu counts as one unit, like a product (US-12).
 function countUnits(order: CurrentOrder | null): number {
-  return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const products =
+    order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  return products + (order?.menus.length ?? 0);
 }
 
 export default function OrderPage() {
@@ -104,7 +107,7 @@ export default function OrderPage() {
               </a>
             </div>
           </div>
-        ) : order.items.length === 0 ? (
+        ) : order.items.length === 0 && order.menus.length === 0 ? (
           <div className="rounded-xl bg-white p-8 text-center shadow-sm">
             <h1 className="mb-2 text-xl font-semibold">Tu pedido está vacío</h1>
             <p className="mb-6 text-neutral-600">
@@ -135,6 +138,23 @@ export default function OrderPage() {
                   </div>
                   <span className="font-semibold tabular-nums">
                     {priceFormatter.format(item.subtotal)}
+                  </span>
+                </li>
+              ))}
+              {order.menus.map((menu) => (
+                <li
+                  key={`menu-${menu.id}`}
+                  className="flex items-center justify-between gap-4 rounded-xl bg-white px-5 py-4 shadow-sm"
+                >
+                  <div>
+                    <p className="font-semibold">Menú del día</p>
+                    <p className="text-sm text-neutral-500">
+                      {menu.starter} · {menu.mainCourse} · {menu.dessert} ·{" "}
+                      {menu.drink}
+                    </p>
+                  </div>
+                  <span className="font-semibold tabular-nums">
+                    {priceFormatter.format(menu.price)}
                   </span>
                 </li>
               ))}

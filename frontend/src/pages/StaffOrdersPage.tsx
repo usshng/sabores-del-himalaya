@@ -206,6 +206,24 @@ export default function StaffOrdersPage() {
                         </span>
                       </li>
                     ))}
+                    {/* The kitchen needs the chosen dishes of each daily menu (US-12). */}
+                    {selected.menus.map((menu) => (
+                      <li
+                        key={`menu-${menu.id}`}
+                        className="flex justify-between gap-3"
+                      >
+                        <span>
+                          1 × Menú del día
+                          <span className="block text-sm text-neutral-500">
+                            {menu.starter} · {menu.mainCourse} · {menu.dessert}{" "}
+                            · {menu.drink}
+                          </span>
+                        </span>
+                        <span className="text-neutral-500 tabular-nums">
+                          {priceFormatter.format(menu.price)}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
 
                   <div className="mt-4 flex items-baseline justify-between border-t border-black pt-4">

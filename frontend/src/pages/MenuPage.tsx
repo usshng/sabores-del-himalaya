@@ -46,7 +46,9 @@ const priceFormatter = new Intl.NumberFormat("es-ES", {
 });
 
 function countUnits(order: CurrentOrder | null): number {
-  return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const products =
+    order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  return products + (order?.menus.length ?? 0);
 }
 
 export default function MenuPage() {
@@ -144,7 +146,12 @@ export default function MenuPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 p-6">
         {category === "DAILY_MENU" ? (
-          <DailyMenuView />
+          <DailyMenuView
+            showOrder={!isStaff}
+            canOrder={isCustomer}
+            onAdded={setOrder}
+            onLoginRequired={() => openDialog("login")}
+          />
         ) : (
           <>
             {state.kind === "loading" && (

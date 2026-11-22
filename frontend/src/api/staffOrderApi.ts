@@ -1,4 +1,4 @@
-import type { OrderItem, OrderStatus } from "@/api/orderApi";
+import type { OrderItem, OrderMenu, OrderStatus } from "@/api/orderApi";
 
 export interface ReceivedOrder {
   id: number;
@@ -10,6 +10,7 @@ export interface ReceivedOrder {
 
 export interface ReceivedOrderDetail extends ReceivedOrder {
   items: OrderItem[];
+  menus: OrderMenu[];
   total: number;
 }
 

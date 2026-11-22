@@ -6,8 +6,19 @@ export interface OrderItem {
   subtotal: number;
 }
 
+// A daily menu of the order (US-12): the dishes chosen and the drink, with its fixed price.
+export interface OrderMenu {
+  id: number;
+  starter: string;
+  mainCourse: string;
+  dessert: string;
+  drink: string;
+  price: number;
+}
+
 export interface CurrentOrder {
   items: OrderItem[];
+  menus: OrderMenu[];
   total: number;
 }
 
@@ -24,6 +35,7 @@ export interface PlacedOrder {
   placedAt: string;
   total: number;
   items: OrderItem[];
+  menus: OrderMenu[];
 }
 
 const CURRENT_ORDER_URL = "/api/orders/current";
@@ -47,6 +59,22 @@ export async function addProductToOrder(
   });
   if (!response.ok) {
     throw new Error(`Add to order failed with status ${response.status}`);
+  }
+  return (await response.json()) as CurrentOrder;
+}
+
+export async function addMenuToOrder(
+  starterId: number,
+  mainCourseId: number,
+  dessertId: number,
+): Promise<CurrentOrder> {
+  const response = await fetch(`${CURRENT_ORDER_URL}/menus`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ starterId, mainCourseId, dessertId }),
+  });
+  if (!response.ok) {
+    throw new Error(`Add menu to order failed with status ${response.status}`);
   }
   return (await response.json()) as CurrentOrder;
 }
