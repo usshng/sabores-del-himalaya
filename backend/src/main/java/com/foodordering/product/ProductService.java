@@ -82,4 +82,18 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(ProductNotFoundException::new);
         product.withdraw();
     }
+
+    /**
+     * Registers a new dish only for daily menus (US-06). It is not on the menu, so customers
+     * can't order it alone, but the chef can use it in this and future daily menus.
+     *
+     * @param request the data entered in the new dish form
+     * @return the created dish
+     */
+    @Transactional
+    public ProductDto createMenuDish(CreateMenuDishRequest request) {
+        Product dish = Product.menuDish(request.name(), request.description(), request.menuUse());
+        return ProductDto.from(productRepository.save(dish));
+    }
+
 }

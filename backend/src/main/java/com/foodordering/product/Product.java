@@ -30,18 +30,22 @@ public class Product {
     // In this case we use BigDecimal instead of double because money can't have rounding errors.
     // Because if we use double, for example for: 0.1 + 0.7 is not exactly 0.8. For BigDecimal, it shows up
     // to 8 digits, 2 of them decimals.
-    @Column(nullable = false, precision = 8, scale = 2)
+    @Column(precision = 8, scale = 2)
     private BigDecimal price;
 
     // The category is saved as a word and not as a number in database as we mentioned before.
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ProductCategory category;
 
     // Only the products that are on the menu are shown for the clients and guests (US-01)
     // By default a new product starts on the menu (US-02)
     @Column(nullable = false)
     private boolean onMenu = true;
+
+    // How a dish only for daily menus can be used: starter, main course or dessert (US-06).
+    // It is null for the products of the menu, because their category already says it.
+    @Enumerated(EnumType.STRING)
+    private MenuUse menuUse;
 
     // JPA (a.k.a Jakarta Persistence API) needs an empty constructor to rebuild the object
     // when it reads a row.
@@ -55,6 +59,17 @@ public class Product {
         this.description = description;
         this.price = price;
         this.category = category;
+    }
+
+    // Creates a dish only for daily menus (US-06). It is never on the menu,
+    // so the customers can't order it alone, only inside a daily menu.
+    public static Product menuDish(String name, String description, MenuUse menuUse) {
+        Product dish = new Product();
+        dish.name = name;
+        dish.description = description;
+        dish.menuUse = menuUse;
+        dish.onMenu = false;
+        return dish;
     }
 
     // some methods to get product's details
@@ -86,6 +101,10 @@ public class Product {
     // to know if is on the menu
     public boolean isOnMenu() {
         return onMenu;
+    }
+
+    public MenuUse getMenuUse() {
+        return menuUse;
     }
 
     // to withdraw, is not on menu = false

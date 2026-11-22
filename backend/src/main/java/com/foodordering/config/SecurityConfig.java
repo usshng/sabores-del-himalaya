@@ -56,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/orders/*/cancellation").hasRole("CUSTOMER")
                         // For the OWNER only: the billing (US-20)
                         .requestMatchers("/api/billing/**").hasRole("OWNER")
+                        // For the CHEF only: register dishes for daily menus (US-06).
+                        .requestMatchers("/api/menu-dishes/**").hasRole("CHEF")
                         // Any endpoint not covered before can only be accessed by a logged-in user.
                         .anyRequest().authenticated())
                 // If you try to access an endpoint without a session, the API returns 401.
