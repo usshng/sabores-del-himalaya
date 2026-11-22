@@ -34,8 +34,10 @@ public class SecurityConfig {
                         // Every failed request will be shown as 401 to the client by default,
                         // we make it public so the user can see which error code it is (404, 409, etc).
                         .requestMatchers("/error").permitAll()
-                        // We define public endpoints, so anyone can access them and see, such as menu (US-01)
-                        .requestMatchers(HttpMethod.GET, "/api/health", "/api/products").permitAll()
+                        // We define public endpoints, so anyone can access them and see, such as menu (US-01),
+                        // and today's daily menu (US-07)
+                        .requestMatchers(HttpMethod.GET, "/api/health", "/api/products", "/api/daily-menus/today")
+                        .permitAll()
                         // registrarion (US-08), activation link (US-09), login (US-10).
                         .requestMatchers(HttpMethod.POST, "/api/customers", "/api/customers/activation",
                                 "/api/auth/login").permitAll()

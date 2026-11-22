@@ -1,5 +1,7 @@
 package com.foodordering.dailymenu;
 
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +11,9 @@ import com.foodordering.product.Product;
 import com.foodordering.product.ProductCategory;
 import com.foodordering.product.ProductRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,16 +24,18 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-// Tests of the configuration of the daily menu (US-05).
+// Tests of the configuration of the daily menu (US-05) and of today's menu (US-07).
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class DailyMenuControllerTests {
 
     private static final String DAY = "2026-12-01";
+    private static final ZoneId ZONE = ZoneId.of("Europe/Madrid");
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,6 +45,10 @@ class DailyMenuControllerTests {
 
     @Autowired
     private ProductRepository productRepository;
+
+    // A fake clock, so each test decides which day is "today" (US-07).
+    @MockitoBean
+    private Clock clock;
 
     private List<Long> starters;
     private List<Long> mainCourses;
@@ -137,6 +148,32 @@ class DailyMenuControllerTests {
                 .andExpect(status().isForbidden());
     }
 
+    // US-07: anyone can see today's menu, with its date, its dishes and the price of 15 €.
+    @Test
+    void todayMenuIsPublic() throws Exception {
+        saveMenu(LocalDate.parse(DAY));
+        setToday(DAY);
+
+        mockMvc.perform(get("/api/daily-menus/today"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.date").value(DAY))
+                .andExpect(jsonPath("$.price").value(15.00))
+                .andExpect(jsonPath("$.starters.length()").value(3))
+                .andExpect(jsonPath("$.mainCourses.length()").value(3))
+                .andExpect(jsonPath("$.desserts.length()").value(2))
+                .andExpect(jsonPath("$.drink.name").value("Lassi"));
+    }
+
+    // US-07: if there is no menu for today, the system says it is not available (the API answers 404).
+    @Test
+    void noMenuForTodayIsNotFound() throws Exception {
+        saveMenu(LocalDate.parse(DAY));
+        setToday("2026-12-02");
+
+        mockMvc.perform(get("/api/daily-menus/today"))
+                .andExpect(status().isNotFound());
+    }
+
     private Long save(String name, ProductCategory category) {
         return productRepository.save(new Product(name, "", new BigDecimal("5.00"), category)).getId();
     }
@@ -148,5 +185,17 @@ class DailyMenuControllerTests {
                 "{\"date\": \"%s\", \"starterIds\": %s, \"mainCourseIds\": %s, \"dessertIds\": %s, \"drinkId\": %d}",
                 DAY, starterIds, mainCourseIds, dessertIds, drinkId);
         return mockMvc.perform(post("/api/daily-menus").contentType(MediaType.APPLICATION_JSON).content(body));
+    }
+
+    // Saves a menu directly in the database, so the US-07 tests don't depend on the chef's form.
+    private void saveMenu(LocalDate date) {
+        dailyMenuRepository.save(new DailyMenu(date, productRepository.findAllById(starters),
+                productRepository.findAllById(mainCourses), productRepository.findAllById(desserts),
+                productRepository.findById(drink).orElseThrow()));
+    }
+
+    private void setToday(String day) {
+        when(clock.getZone()).thenReturn(ZONE);
+        when(clock.instant()).thenReturn(LocalDate.parse(day).atStartOfDay(ZONE).toInstant());
     }
 }

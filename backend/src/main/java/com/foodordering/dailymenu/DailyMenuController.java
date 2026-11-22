@@ -2,6 +2,7 @@ package com.foodordering.dailymenu;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,5 +26,12 @@ public class DailyMenuController {
     @ResponseStatus(HttpStatus.CREATED)
     public DailyMenuDto create(@Valid @RequestBody CreateDailyMenuRequest request) {
         return dailyMenuService.create(request);
+    }
+
+    // GET /api/daily-menus/today, today's menu for visitors and customers (US-07).
+    // If there is no menu for today, the API answers 404.
+    @GetMapping("/today")
+    public DailyMenuDto getTodayMenu() {
+        return dailyMenuService.getTodayMenu();
     }
 }

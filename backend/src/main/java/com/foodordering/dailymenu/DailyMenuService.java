@@ -3,6 +3,8 @@ package com.foodordering.dailymenu;
 import com.foodordering.product.MenuCourse;
 import com.foodordering.product.Product;
 import com.foodordering.product.ProductRepository;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,14 @@ public class DailyMenuService {
 
     private final DailyMenuRepository dailyMenuRepository;
     private final ProductRepository productRepository;
+    // Spring gives us the clock, so the tests can replace it with a fixed day (see ClockConfig).
+    private final Clock clock;
 
-    public DailyMenuService(DailyMenuRepository dailyMenuRepository, ProductRepository productRepository) {
+    public DailyMenuService(DailyMenuRepository dailyMenuRepository, ProductRepository productRepository,
+            Clock clock) {
         this.dailyMenuRepository = dailyMenuRepository;
         this.productRepository = productRepository;
+        this.clock = clock;
     }
 
     /**
@@ -45,6 +51,20 @@ public class DailyMenuService {
         }
         DailyMenu menu = new DailyMenu(request.date(), starters, mainCourses, desserts, drink);
         return DailyMenuDto.from(dailyMenuRepository.save(menu));
+    }
+
+    /**
+     * Returns today's menu, with its date, dishes and fixed price (US-07). Only today's menu is shown,
+     * because it is the only one that customers can add to their orders (US-12).
+     *
+     * @return the menu of today
+     * @throws DailyMenuNotFoundException if there is no menu for today (the API answers 404)
+     */
+    @Transactional(readOnly = true)
+    public DailyMenuDto getTodayMenu() {
+        return dailyMenuRepository.findByMenuDate(LocalDate.now(clock))
+                .map(DailyMenuDto::from)
+                .orElseThrow(DailyMenuNotFoundException::new);
     }
 
     // Finds the dishes of one part of the menu. They can't be repeated, so each option is different.
