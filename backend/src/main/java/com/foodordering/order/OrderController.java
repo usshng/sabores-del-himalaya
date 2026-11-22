@@ -29,6 +29,12 @@ public class OrderController {
         return orderService.addProduct(authentication.getName(), request);
     }
 
+    @PostMapping("/menus")
+    public CurrentOrderDto addMenu(@Valid @RequestBody AddOrderMenuRequest request,
+            Authentication authentication) {
+        return orderService.addMenu(authentication.getName(), request);
+    }
+
     @PostMapping("/confirmation")
     public PlacedOrderDto confirm(Authentication authentication) {
         return orderService.confirm(authentication.getName());

@@ -5,10 +5,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PlacedOrderDto(Long id, OrderStatus status, LocalDateTime placedAt, BigDecimal total,
-        List<OrderItemDto> items) {
+        List<OrderItemDto> items, List<OrderMenuDto> menus) {
 
     static PlacedOrderDto from(CustomerOrder order) {
         return new PlacedOrderDto(order.getId(), order.getStatus(), order.getPlacedAt(), order.getTotal(),
-                order.getItems().stream().map(OrderItemDto::from).toList());
+                order.getItems().stream().map(OrderItemDto::from).toList(),
+                order.getMenus().stream().map(OrderMenuDto::from).toList());
     }
 }

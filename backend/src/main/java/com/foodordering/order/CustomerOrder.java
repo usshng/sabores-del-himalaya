@@ -47,6 +47,12 @@ public class CustomerOrder {
     @JoinColumn(name = "order_id")
     private List<OrderItem> items = new ArrayList<>();
 
+    // The daily menus of the order (US-12). They go apart from the products, because a menu has three
+    // dishes and a fixed price.
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_id")
+    private List<OrderMenu> menus = new ArrayList<>();
+
     protected CustomerOrder() {
 
     }
@@ -65,9 +71,14 @@ public class CustomerOrder {
                         () -> items.add(new OrderItem(product, quantity)));
     }
 
+    // Each menu is a new line, we don't join it with another menu because the dishes can be different.
+    public void addMenu(OrderMenu menu) {
+        menus.add(menu);
+    }
+
     // Sends the order to the staff, status "received", and shows the date and time of confirmation
     public void confirm(LocalDateTime now) {
-        if (items.isEmpty()) {
+        if (items.isEmpty() && menus.isEmpty()) {
             throw new EmptyOrderException();
         }
         this.status = OrderStatus.RECEIVED;
@@ -116,10 +127,19 @@ public class CustomerOrder {
         return items;
     }
 
+    public List<OrderMenu> getMenus() {
+        return menus;
+    }
+
     // the total amount, it is the price of each product multiplied by the quantity.
+    // We also add the price of each daily menu (US-12).
     public BigDecimal getTotal() {
-        return items.stream()
+        BigDecimal products = items.stream()
                 .map(OrderItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal dailyMenus = menus.stream()
+                .map(OrderMenu::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return products.add(dailyMenus);
     }
 }

@@ -2,9 +2,13 @@ package com.foodordering.order;
 
 import com.foodordering.customer.Customer;
 import com.foodordering.customer.CustomerRepository;
+import com.foodordering.dailymenu.DailyMenu;
+import com.foodordering.dailymenu.DailyMenuNotFoundException;
+import com.foodordering.dailymenu.DailyMenuRepository;
 import com.foodordering.product.Product;
 import com.foodordering.product.ProductRepository;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -16,13 +20,15 @@ public class OrderService {
     private final CustomerOrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final DailyMenuRepository dailyMenuRepository;
     private final Clock clock;
 
     public OrderService(CustomerOrderRepository orderRepository, CustomerRepository customerRepository,
-            ProductRepository productRepository, Clock clock) {
+            ProductRepository productRepository, DailyMenuRepository dailyMenuRepository, Clock clock) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
+        this.dailyMenuRepository = dailyMenuRepository;
         this.clock = clock;
     }
 
@@ -57,6 +63,31 @@ public class OrderService {
         CustomerOrder order = orderRepository.findByCustomerAndStatus(customer, OrderStatus.IN_PROGRESS)
                 .orElseGet(() -> orderRepository.save(new CustomerOrder(customer)));
         order.addProduct(product, request.quantity());
+        return CurrentOrderDto.from(order);
+    }
+
+    /**
+     * Adds today's daily menu to the customer's order in progress, with the dishes the customer has chosen.
+     *
+     * @param login the login of the logged-in customer
+     * @param request the starter, the main course and the dessert chosen
+     * @return the order in progress after adding the menu
+     * @throws DailyMenuNotFoundException if there is no daily menu for today
+     * @throws InvalidMenuChoiceException if a chosen dish is not an option of today's menu
+     */
+    @Transactional
+    public CurrentOrderDto addMenu(String login, AddOrderMenuRequest request) {
+        Customer customer = findCustomer(login);
+        DailyMenu dailyMenu = dailyMenuRepository.findByMenuDate(LocalDate.now(clock))
+                .orElseThrow(DailyMenuNotFoundException::new);
+        Product starter = findOption(dailyMenu.getStarters(), request.starterId());
+        Product mainCourse = findOption(dailyMenu.getMainCourses(), request.mainCourseId());
+        Product dessert = findOption(dailyMenu.getDesserts(), request.dessertId());
+        CustomerOrder order = orderRepository.findByCustomerAndStatus(customer, OrderStatus.IN_PROGRESS)
+                .orElseGet(() -> orderRepository.save(new CustomerOrder(customer)));
+        order.addMenu(new OrderMenu(dailyMenu, starter, mainCourse, dessert));
+        // We flush so the new menu gets its id before we answer, the frontend uses it to list the menus.
+        orderRepository.flush();
         return CurrentOrderDto.from(order);
     }
 
@@ -113,5 +144,13 @@ public class OrderService {
 
     private Customer findCustomer(String login) {
         return customerRepository.findByLogin(login).orElseThrow();
+    }
+
+    // The dish has to be one of the options of its part of the menu, so a dessert can't be chosen as starter.
+    private Product findOption(List<Product> options, Long dishId) {
+        return options.stream()
+                .filter(dish -> dish.getId().equals(dishId))
+                .findFirst()
+                .orElseThrow(InvalidMenuChoiceException::new);
     }
 }
