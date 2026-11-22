@@ -9,7 +9,9 @@ import {
   type CurrentOrder,
   type MyOrder,
   type OrderStatus,
+  type PlacedOrder,
 } from "@/api/orderApi";
+import ModifyOrderDialog from "@/components/ModifyOrderDialog";
 import SiteHeader from "@/components/SiteHeader";
 import { navigate } from "@/lib/navigation";
 
@@ -34,8 +36,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-ES", {
   minute: "2-digit",
 });
 
+// Each daily menu counts as one unit, like a product (US-12).
 function countUnits(order: CurrentOrder | null): number {
-  return order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  const products =
+    order?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  return products + (order?.menus.length ?? 0);
 }
 
 export default function MyOrdersPage() {
@@ -44,6 +49,8 @@ export default function MyOrdersPage() {
   const [currentOrder, setCurrentOrder] = useState<CurrentOrder | null>(null);
   const [now] = useState(() => Date.now());
   const [error, setError] = useState(false);
+  // The order the customer is modifying in the P6b dialog (US-15).
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     getCurrentUser().then((current) => {
@@ -79,6 +86,17 @@ export default function MyOrdersPage() {
         ),
       )
       .catch(() => setError(true));
+  }
+
+  // After saving, the list shows the new total of the order.
+  function handleSaved(updated: PlacedOrder) {
+    setOrders(
+      (current) =>
+        current?.map((item) =>
+          item.id === updated.id ? { ...item, total: updated.total } : item,
+        ) ?? null,
+    );
+    setEditingId(null);
   }
 
   if (!user || !orders) {
@@ -157,12 +175,20 @@ export default function MyOrdersPage() {
                     {STATUS_LABEL[order.status]}
                   </span>
                   {canCancel(order) && (
-                    <button
-                      onClick={() => handleCancel(order)}
-                      className="rounded-md bg-neutral-200 px-3 py-1 text-sm font-medium hover:bg-neutral-300"
-                    >
-                      Cancelar
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setEditingId(order.id)}
+                        className="rounded-md bg-black px-3 py-1 text-sm font-medium text-white hover:bg-neutral-800"
+                      >
+                        Modificar
+                      </button>
+                      <button
+                        onClick={() => handleCancel(order)}
+                        className="rounded-md bg-neutral-200 px-3 py-1 text-sm font-medium hover:bg-neutral-300"
+                      >
+                        Cancelar
+                      </button>
+                    </>
                   )}
                 </li>
               );
@@ -170,6 +196,14 @@ export default function MyOrdersPage() {
           </ul>
         )}
       </main>
+
+      {editingId !== null && (
+        <ModifyOrderDialog
+          orderId={editingId}
+          onClose={() => setEditingId(null)}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
   );
 }

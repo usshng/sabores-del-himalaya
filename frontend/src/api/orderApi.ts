@@ -115,3 +115,53 @@ export async function cancelOrder(id: number): Promise<MyOrder> {
   }
   return (await response.json()) as MyOrder;
 }
+
+// The dishes of a new daily menu added while modifying a placed order (US-15).
+export interface NewOrderMenu {
+  starterId: number;
+  mainCourseId: number;
+  dessertId: number;
+}
+
+// The new content of the order: what is not in the request is removed from the order (US-15).
+export interface ModifyOrderRequest {
+  items: { productId: number; quantity: number }[];
+  keptMenuIds: number[];
+  newMenus: NewOrderMenu[];
+}
+
+// 409: the 10 minutes have passed, 400: the order would be empty, 404: a new product is not in the menu.
+export type ModifyOrderError =
+  "PERIOD_EXPIRED" | "EMPTY" | "NOT_AVAILABLE" | "UNKNOWN";
+
+export async function getMyOrder(id: number): Promise<PlacedOrder> {
+  const response = await fetch(`/api/orders/${id}`);
+  if (!response.ok) {
+    throw new Error(`Order request failed with status ${response.status}`);
+  }
+  return (await response.json()) as PlacedOrder;
+}
+
+export async function modifyOrder(
+  id: number,
+  request: ModifyOrderRequest,
+): Promise<PlacedOrder> {
+  const response = await fetch(`/api/orders/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (response.status === 409) {
+    throw new Error("PERIOD_EXPIRED");
+  }
+  if (response.status === 400) {
+    throw new Error("EMPTY");
+  }
+  if (response.status === 404) {
+    throw new Error("NOT_AVAILABLE");
+  }
+  if (!response.ok) {
+    throw new Error("UNKNOWN");
+  }
+  return (await response.json()) as PlacedOrder;
+}
